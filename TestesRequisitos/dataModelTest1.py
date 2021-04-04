@@ -1,7 +1,6 @@
 from cassandra.cluster import Cluster
 
 #Ligação ao cluster, neste caso um cluster de testes local que criei previamente
-from pip._vendor.requests import ReadTimeout
 
 cluster = Cluster()
 session = cluster.connect('pitest')
