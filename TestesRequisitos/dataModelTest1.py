@@ -1,9 +1,12 @@
 from cassandra.cluster import Cluster
 
 #Ligação ao cluster, neste caso um cluster de testes local que criei previamente
+from pip._vendor.requests import ReadTimeout
+
 cluster = Cluster()
 session = cluster.connect('pitest')
 
+global table_id
 table_id = 1
 
 
@@ -34,12 +37,9 @@ def checkTable(flatJson):
 
     #procurar na tabela metadata o tableName quando a lista dos atributos é igual aos parametros do flat json
     #retorna o nome se já houver ou retorna null se não existe ainda essa tabela 
-    try:
-        table = session.execute("SELECT * FROM metadata WHERE tableAtributes = " + str(lowerParList) )
-        return table.tableName
-    except ReadTimeout:
-        lowerog.exception("Query timed out:")
-        return null
+    table = session.execute("SELECT * FROM metadata WHERE tableAtributes = " + str(lowerParList) )
+    return table.tableName
+
 
 #Função para criar tabelas
 def createTables(flatJson):
@@ -50,12 +50,12 @@ def createTables(flatJson):
   
 
     strCommand = "create table " + table_name + "(pk text"      #Começar a string de comando que cria a tabela principal
-
+    lowerParList = []
     for key in flatJson.keys():                     #Para cada chave do flatJson
         lowerParList.append(key.lower())
         key = key.lower()
         strCommand = strCommand + ", " + key + " text"  #Adicionar à string do comando que cria a tabela principal   
-        session.execute("create table "+ table_name + "_" + key + " (table text, pk text," + key + " text, PRIMARY KEY( table, "  key + "))" )  #Criar a tabela secundária correspondente a essa chave
+        session.execute("create table "+ table_name + "_" + key + " (table text, pk text," + key + " text, PRIMARY KEY( table, " + key + "))" )  #Criar a tabela secundária correspondente a essa chave
 
     lowerParList.append('pk') 
     strCommand = strCommand + ", PRIMARY KEY(pk)) "  #Acabar a string de comando após todos os parametros serem adicionados e correr o comando
@@ -69,8 +69,7 @@ def createTables(flatJson):
 
 #Função de inserção de um json
 def insertInto(flatJson, pk_id):                    #os parametros são o jason e a pk que será passada pela API
- 
-    table_name = checkTable(flatJson):               #Verificar se existem tabelas em que os dados possam ser inseridos
+    table_name = checkTable(flatJson)              #Verificar se existem tabelas em que os dados possam ser inseridos
     if not table_name:
         table_name = createTables(flatJson)                       #Caso não exista chamar a função que cria que retorna o seu nome (da principal)
    
@@ -100,4 +99,4 @@ def insertSecondaryTables(table, flatJson, pk):
         session.execute(insertStr)
 
 
-insertInto(json, pk_id)
+insertInto(json,1)
