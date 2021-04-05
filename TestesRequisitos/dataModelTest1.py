@@ -33,7 +33,7 @@ json4 = {"sensorId": "0003",
 def init():  # Verificar se a tabela de metadados já existe e se não existir criar
     try:
         session.execute("create table metadata (tableName text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
-        session.execute("create table sensors (sensor_id text,users text ,tables list<text>, PRIMARY KEY(tableName) )")
+        session.execute("create table sensors (sensor_id text,users text ,tables list<text>, PRIMARY KEY(sensor_id, users) )")
     except:
         pass
 
