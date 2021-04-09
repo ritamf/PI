@@ -32,33 +32,34 @@ json4 = {"sensorId": "0003",
 
 def init():  # Verificar se a tabela de metadados já existe e se não existir criar
     try:
-        session.execute("create table metadata (tableName text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
+        session.execute("create table metadata (tableName text, sensorId text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
         session.execute("create table sensors (sensor_id text,users text ,tables list<text>, PRIMARY KEY(sensor_id, users) )")
     except:
         pass
 
 
 # Função para verificar se já existe uma tabela na qual o json possa ser inserido
-def checkTable(flatJson):
+def checkTable(flatJson, sensor_id):
     lowerParList = []  # Criar uma lista com todos os parametros do flat json em minisculas => Porque o cassandra vai ter as colunas em miniscula
     for par in flatJson.keys():
         lowerParList.append(par.lower())
 
     lowerParList.append('pk')  # Adicionar pk porque estará em todas as tabelas
+    lowerParList.append('sensorId')  # Adicionar pk porque estará em todas as tabelas
+
 
     tableAts = session.execute("SELECT * FROM metadata")  # Verifiar os dados da tabela de metadados
 
     for row in tableAts:
-        if set(row[1]) == set(
-                lowerParList):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
+        if set(row[2]) == set(lowerParList) and row[1] == sensor_id:  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
             return row[0]
     return None  # Caso contrário retorna None
 
 
 # Função para criar tabelas
-def createTables(flatJson, id):
-    table_name = "table" + str(
-        id)  # Gerar nome da tabela principal // Não sei se este será a forma como vamos gerar nomes // Solução provisória
+def createTables(flatJson, pk_id, sensor_id):
+    sensor_id = str(sensor_id)
+    table_name = "table" + str(pk_id)  # Gerar nome da tabela principal // Não sei se este será a forma como vamos gerar nomes // Solução provisória
 
     strCommand = "create table " + table_name + "(pk text"  # Começar a string de comando que cria a tabela principal
     lowerParList = []  # Lista de parametros / Para colocar na tabela de metadados
@@ -71,13 +72,10 @@ def createTables(flatJson, id):
             "create table " + table_name + "_" + key + " (tableName text, pk text," + key + " text, PRIMARY KEY( tableName, " + key + ", pk))")  # Criar a tabela secundária correspondente a essa chave
 
     lowerParList.append('pk')
-    lowerParList.append('sensor_id')
     strCommand = strCommand + ", PRIMARY KEY(pk)) "  # Acabar a string de comando após todos os parametros serem adicionados e correr o comando
     session.execute(strCommand)
 
-    session.execute("insert into metadata(tableName, tableAtributes) values ('" + table_name + "', " + str(
-        lowerParList) + ")")  # Adicionar a a tabela principal à tabela de metadados
-
+    session.execute("insert into metadata(tableName, sensorId, tableAtributes) values ('" + table_name + "', '" + sensor_id + "', " + str(lowerParList) + ")")  # Adicionar a a tabela principal à tabela de metadados
     return table_name  # retorna o table_name da tabela principal criada
 
 
@@ -85,18 +83,18 @@ def createTables(flatJson, id):
 def insertInto(flatJson, pk_id, sensor_id):  # os parametros são o json e a pk que será passada pela API
 
     pk_id = str(pk_id)
-    table_name = checkTable(flatJson)  # Verificar se existe uma tabela em que os dados possam ser inseridos
+    table_name = checkTable(flatJson, sensor_id)  # Verificar se existe uma tabela em que os dados possam ser inseridos
+    print("after checkTable(), table name: " + str(table_name))
     new_table_name = table_name
     if not table_name:
-        table_name = createTables(flatJson,
-                                  pk_id)  # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
+        table_name = createTables(flatJson,pk_id, sensor_id)  # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
 
-    strInsert = "insert into " + table_name + "(pK, sensor_id"  # strInsert é a string de instrução / O que escreveriamos se estivessemos a inserir por terminal
+    strInsert = "insert into " + table_name + "(pK"  # strInsert é a string de instrução / O que escreveriamos se estivessemos a inserir por terminal
 
     for key in flatJson.keys():
         strInsert = strInsert + ", " + key
 
-    strInsert = strInsert + ") values('" + pk_id + "'" + sensor_id + "'"  # Acabar os campos da tabela e começar a inserir os valores na string
+    strInsert = strInsert + ") values('" + pk_id + "'"  # Acabar os campos da tabela e começar a inserir os valores na string
 
     for key in flatJson.keys():  # Ciclo para adicionar os valores à string de instrução
         strInsert = strInsert + ", '" + flatJson[key] + "'"
@@ -120,10 +118,12 @@ def insertSecondaryTables(table, flatJson, pk):
 
 
 def insertIntoSensor(flatJson,pk_id, sensor_id, user):
-    new_table_name = insertInto(flatJson, pk_id, sensor_id, user)
-    sensor = session.execute("SELECT * FROM sensors where sensor_id = " + sensor_id)
+    sensor_id = str(sensor_id)
+    new_table_name = insertInto(flatJson, pk_id, sensor_id)
+    sensor = session.execute("SELECT * FROM sensors where sensor_id = '" + sensor_id + "'")
     if not sensor:
-        session.execute("insert into sensors (sensor_id, users, tables) values ('" + sensor_id + "', '" + user + "', + '" + new_table_name + "') ")  # Adicionar a a tabela principal à tabela de metadados
+        if new_table_name is not None:
+            session.execute("insert into sensors (sensor_id, users, tables) values ('" + sensor_id + "', '" + user + "', '" + new_table_name + "') ")  # Adicionar a a tabela principal à tabela de metadados
     else:
         tables = sensor.tables
         if new_table_name is not None:
@@ -184,8 +184,8 @@ init()
 print("\n")
 
 print("Inserts")
-insertIntoSensor(json, 1, 1, "Marta")
-insertIntoSensor(json2, 2, 3, "Luis")
+insertIntoSensor(json, 1, 2, "Marta")
+insertIntoSensor(json2, 2, 1, "Luis")
 insertIntoSensor(json3, 3, 2, "Marta")
 insertIntoSensor(json4, 4, 3, "Luis")
 
