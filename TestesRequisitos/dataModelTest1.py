@@ -46,13 +46,12 @@ def checkTable(flatJson, sensor_id):
         lowerParList.append(par.lower())
 
     lowerParList.append('pk')  # Adicionar pk porque estará em todas as tabelas
-    lowerParList.append('sensorId')  # Adicionar pk porque estará em todas as tabelas
 
 
     tableAts = session.execute("SELECT * FROM metadata")  # Verifiar os dados da tabela de metadados
 
     for row in tableAts:
-        if set(row[2]) == set(lowerParList):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
+        if set(row[2]) == set(lowerParList) and row[1] == str(sensor_id):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
             t= row[0]
     print("valor que checkTable retorna: " + str(t))
     return t  # Caso contrário retorna None
@@ -123,9 +122,11 @@ def insertIntoSensor(flatJson,pk_id, sensor_id, user):
     sensor_id = str(sensor_id)
     new_table_name = insertInto(flatJson, pk_id, sensor_id)
     sensor = session.execute("SELECT * FROM sensors where sensor_id = '" + sensor_id + "'")
+    tables = []
     if not sensor:
         if new_table_name is not None:
-            session.execute("insert into sensors (sensor_id, users, tables) values ('" + sensor_id + "', '" + user + "', '" + new_table_name + "') ")  # Adicionar a a tabela principal à tabela de metadados
+            tables.append(new_table_name)
+            session.execute("insert into sensors (sensor_id, users, tables) values ('" + sensor_id + "', '" + user + "', " + str(tables) + ") ")  # Adicionar a a tabela principal à tabela de metadados
     else:
         tables = sensor.tables
         if new_table_name is not None:
@@ -181,7 +182,7 @@ def query(table, projList, paramConditionDictionary):
             print("..........................................")
 
 
-#init()
+init()
 
 print("\n")
 
