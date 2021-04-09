@@ -40,6 +40,7 @@ def init():  # Verificar se a tabela de metadados já existe e se não existir c
 
 # Função para verificar se já existe uma tabela na qual o json possa ser inserido
 def checkTable(flatJson, sensor_id):
+    t = None
     lowerParList = []  # Criar uma lista com todos os parametros do flat json em minisculas => Porque o cassandra vai ter as colunas em miniscula
     for par in flatJson.keys():
         lowerParList.append(par.lower())
@@ -51,9 +52,10 @@ def checkTable(flatJson, sensor_id):
     tableAts = session.execute("SELECT * FROM metadata")  # Verifiar os dados da tabela de metadados
 
     for row in tableAts:
-        if set(row[2]) == set(lowerParList) and row[1] == sensor_id:  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
-            return row[0]
-    return None  # Caso contrário retorna None
+        if set(row[2]) == set(lowerParList):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
+            t= row[0]
+    print("valor que checkTable retorna: " + str(t))
+    return t  # Caso contrário retorna None
 
 
 # Função para criar tabelas
@@ -179,7 +181,7 @@ def query(table, projList, paramConditionDictionary):
             print("..........................................")
 
 
-init()
+#init()
 
 print("\n")
 
