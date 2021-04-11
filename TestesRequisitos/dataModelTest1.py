@@ -32,14 +32,14 @@ json4 = {"sensorId": "0003",
 
 def init():  # Verificar se a tabela de metadados já existe e se não existir criar
     try:
-        session.execute("create table metadata (tableName text, sensorId text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
-        session.execute("create table sensors (sensor_id text,users text ,tables list<text>, PRIMARY KEY(sensor_id, users) )")
+        session.execute("create table metadata (tableName text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
+        session.execute("create table sensors (sensor_id text,user text ,tables list<text>, PRIMARY KEY(user, sensor_id) )")
     except:
         pass
 
 
 # Função para verificar se já existe uma tabela na qual o json possa ser inserido
-def checkTable(flatJson, sensor_id):
+def checkTable(flatJson):
     t = None
     lowerParList = []  # Criar uma lista com todos os parametros do flat json em minisculas => Porque o cassandra vai ter as colunas em miniscula
     for par in flatJson.keys():
@@ -51,15 +51,12 @@ def checkTable(flatJson, sensor_id):
     tableAts = session.execute("SELECT * FROM metadata")  # Verifiar os dados da tabela de metadados
 
     for row in tableAts:
-        if set(row[2]) == set(lowerParList) and row[1] == str(sensor_id):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
+        if set(row[1]) == set(lowerParList):  # Se existir alguma tabela que já possua a mesma formatação retornar o seu nome
             t= row[0]
-    print("valor que checkTable retorna: " + str(t))
     return t  # Caso contrário retorna None
 
-
 # Função para criar tabelas
-def createTables(flatJson, pk_id, sensor_id):
-    sensor_id = str(sensor_id)
+def createTables(flatJson, pk_id):
     table_name = "table" + str(pk_id)  # Gerar nome da tabela principal // Não sei se este será a forma como vamos gerar nomes // Solução provisória
 
     strCommand = "create table " + table_name + "(pk text"  # Começar a string de comando que cria a tabela principal
@@ -76,7 +73,7 @@ def createTables(flatJson, pk_id, sensor_id):
     strCommand = strCommand + ", PRIMARY KEY(pk)) "  # Acabar a string de comando após todos os parametros serem adicionados e correr o comando
     session.execute(strCommand)
 
-    session.execute("insert into metadata(tableName, sensorId, tableAtributes) values ('" + table_name + "', '" + sensor_id + "', " + str(lowerParList) + ")")  # Adicionar a a tabela principal à tabela de metadados
+    session.execute("insert into metadata(tableName, tableAtributes) values ('" + table_name + "', " + str(lowerParList) + ")")  # Adicionar a a tabela principal à tabela de metadados
     return table_name  # retorna o table_name da tabela principal criada
 
 
@@ -84,11 +81,10 @@ def createTables(flatJson, pk_id, sensor_id):
 def insertInto(flatJson, pk_id, sensor_id):  # os parametros são o json e a pk que será passada pela API
 
     pk_id = str(pk_id)
-    table_name = checkTable(flatJson, sensor_id)  # Verificar se existe uma tabela em que os dados possam ser inseridos
-    print("after checkTable(), table name: " + str(table_name))
+    table_name = checkTable(flatJson)  # Verificar se existe uma tabela em que os dados possam ser inseridos
     new_table_name = table_name
     if not table_name:
-        table_name = createTables(flatJson,pk_id, sensor_id)  # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
+        table_name = createTables(flatJson,pk_id)  # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
 
     strInsert = "insert into " + table_name + "(pK"  # strInsert é a string de instrução / O que escreveriamos se estivessemos a inserir por terminal
 
@@ -119,19 +115,22 @@ def insertSecondaryTables(table, flatJson, pk):
 
 
 def insertIntoSensor(flatJson,pk_id, sensor_id, user):
+
     sensor_id = str(sensor_id)
     new_table_name = insertInto(flatJson, pk_id, sensor_id)
-    sensor = session.execute("SELECT * FROM sensors where sensor_id = '" + sensor_id + "'")
+    sensor = session.execute("SELECT * FROM sensors where user = '" + user +"' and sensor_id = '" + sensor_id + "'")
     tables = []
+
     if not sensor:
         if new_table_name is not None:
             tables.append(new_table_name)
-            session.execute("insert into sensors (sensor_id, users, tables) values ('" + sensor_id + "', '" + user + "', " + str(tables) + ") ")  # Adicionar a a tabela principal à tabela de metadados
+            session.execute("insert into sensors (sensor_id, user, tables) values ('" + sensor_id + "', '" + user + "', " + str(tables) + ") ")  # Adicionar a a tabela principal à tabela de metadados
     else:
-        tables = sensor.tables
-        if new_table_name is not None:
+        row = sensor.one()
+        tables = row[2]
+        if new_table_name is not None and not new_table_name in tables:
             tables.append(new_table_name)
-            session.execute("update sensors set tables = '" + tables + "' where sensor_id = '" + sensor_id + "'")
+            session.execute("update sensors set tables = " + str(tables) + " where user = '" + user + "' and sensor_id = '" + sensor_id + "'")
 
 
 def subQuery(table, param, condition):
@@ -181,6 +180,37 @@ def query(table, projList, paramConditionDictionary):
             print(str(row)[4:len(str(row)) - 1])
             print("..........................................")
 
+def showTables():
+    tableRows = session.execute("Select * from metadata")
+    for row in tableRows:
+        print(row[0] + " - " + str(row[1]))
+
+def showUsers():
+    userRows = session.execute("Select * from sensors")
+    users = []
+    for row in userRows:
+        users.append(row[0])
+    
+    users = list(dict.fromkeys(users))
+
+    for user in users:
+        print(user)
+
+def showMyTables(user):
+    userRows = session.execute("Select * from sensors where user = '" + user + "'" )
+    tables = []
+
+    for row in userRows:
+        for table in row[2]:
+            tables.append(table)
+    
+    tables = list(dict.fromkeys(tables))
+
+    for table in tables:
+        result = session.execute("Select * from metadata where tableName = '" + table + "'")
+        tableInfo = result.one()
+        print(tableInfo[0] + " - " + str(tableInfo[1]))
+
 
 init()
 
@@ -191,6 +221,18 @@ insertIntoSensor(json, 1, 2, "Marta")
 insertIntoSensor(json2, 2, 1, "Luis")
 insertIntoSensor(json3, 3, 2, "Marta")
 insertIntoSensor(json4, 4, 3, "Luis")
+
+print("\n")
+
+showTables()
+
+print("\n")
+
+showUsers()
+
+print("\n")
+
+showMyTables("Luis")
 
 print("\n")
 
