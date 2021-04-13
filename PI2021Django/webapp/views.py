@@ -4,10 +4,44 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 
-from .models import products, attributes
-from .serializers import productsSerializers, attributesSerializers
+from .models import products, attributes, sensors
+from .serializers import productsSerializers, attributesSerializers, sensorsSerializers
 
 from django.core.cache import cache
+
+
+
+@api_view(['GET'])
+def sensors_overview(request):
+    api_urls = {
+        'List': 'sensors/list/',
+    }
+    return Response(api_urls)
+
+#get all sensors from db
+@api_view(['GET'])
+def sensors_get(request):
+    sensor = sensors.objects.all()
+    searlizer = sensorsSerializers(sensor, many=True)
+    return Response(searlizer.data)
+
+@api_view(['GET'])
+def sensors_get_one(request, key):
+    sensor = sensors.objects.get(sensor_id=key)
+    searlizer = sensorsSerializers(sensor, many=False)
+    return Response(searlizer.data)
+
+
+@api_view(['POST'])
+def sensors_post(request):
+    sensor = sensors.if_not_exists().create(
+        sensor_id=request.data['sensor_id'],
+        user=request.data['user'],
+        tables=request.data['tables'],
+        pks=request.data['pks']
+    )
+    return Response(sensor, status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['GET'])
@@ -97,13 +131,13 @@ def attributes_get_one(request, key):
     searlizer = attributesSerializers(attribute, many=False)
     return Response(searlizer.data)
 
-
 @api_view(['POST'])
 @parser_classes([FormParser, MultiPartParser])
 def attributes_post(request):
     sObj = attributes.if_not_exists().create(id=uuid.uuid4(), name=request.data['name'])
     cache.set(sObj.id, sObj.name)  # Setting Cache
     return Response(sObj, status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['POST'])
