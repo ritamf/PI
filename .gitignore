@@ -2,7 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
 
 PI2021Django/lib/
-
+PI2021Django/bin/
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/tasks.json
