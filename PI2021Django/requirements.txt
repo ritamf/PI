@@ -1,0 +1,4 @@
+cassandra-driver
+Django
+django-cassandra-engine
+djangorestframework
