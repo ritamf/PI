@@ -3,6 +3,8 @@ Django Rest API using Cassandra
 
 ## install requirements and create database
 
+### Usar PRIMARY KEY(sensor_id) para estar de acordo com os models.py
+
 ```bash
 pip install requirements.txt
 
@@ -29,11 +31,22 @@ exit
 ```
 
 ```bash
+
 source bin/activate
+
+python3 manage.py sync_cassandra
 
 python manage.py runserver
 
 ```
+
+### notas
+
+$ python3 manage.py sync_cassandra é outra forma de criar o keyspace
+
+vai buscar ao settings.py a db que está la definida na linha 87
+
+### urls
 
 http://127.0.0.1:8000/sensors/detail/0001/
 
