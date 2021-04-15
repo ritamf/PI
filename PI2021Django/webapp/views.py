@@ -6,6 +6,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 
 from .models import sensors #, products, attributes
 from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
+from .models import metadata
+from .serializers import metadataSerializers
 
 from django.core.cache import cache
 
@@ -42,6 +44,15 @@ def sensors_post(request):
         pks=request.data['pks']
     )
     return Response(sensor, status=status.HTTP_201_CREATED)
+
+#sensors/list
+@api_view(['GET'])
+def metadata_overview(request):
+    api_urls = {
+        'List': 'metadata/list/',
+    }
+    return Response(api_urls)
+
 
 
 

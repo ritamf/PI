@@ -23,6 +23,9 @@ urlpatterns = [
     path('sensors/list/', views.sensors_get, name="sensors_list"),
     path('sensors/detail/<str:key>/', views.sensors_get_one, name="sensors_detail"),
     path('sensors/create/', views.sensors_post, name="sensors_create"),
+
+    path('metadata/', views.metadata_overview, name="metadata_overview"),
+    #path('metadata/list/', views.metadata_get, name="metadata_list"),
     # path('sensors/update/<str:key>/', views.sensors_update, name="sensors_update"),
     # path('sensors/delete/<str:key>/', views.sensors_delete, name="sensors_delete"),
 

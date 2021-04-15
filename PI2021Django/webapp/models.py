@@ -13,6 +13,11 @@ class sensors(DjangoCassandraModel):
     class Meta:
         unique_together = (('sensor_id', 'user'))
 
+class metadata(DjangoCassandraModel):
+    table_name = columns.Text(primary_key=True)
+    table_attributes = columns.List(value_type = columns.Text)
+
+
 # Examples
 # class products(DjangoCassandraModel):
 #     id = columns.UUID(primary_key=True)
