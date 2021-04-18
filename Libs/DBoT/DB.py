@@ -116,6 +116,7 @@ class DB:
         else:
             row = sensor.one()                                                                                                  # Se o sensor já existe mas esta formatação não é uma das associadas, adicionar ao parametro tables e pks            tables = row[3]
             pks = row[2]
+            tables = row[3]
             
             if not str(pk_id) in pks:
                 pks.append(str(pk_id))
