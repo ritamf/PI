@@ -2,16 +2,16 @@ import uuid
 from cassandra.cqlengine import columns
 from cassandra.cqlengine.management import sync_table
 from django_cassandra_engine.models import DjangoCassandraModel
-
+# from viewfow.fields import CompositeKey
 
 class sensors(DjangoCassandraModel):
     sensor_id = columns.Text(primary_key=True)
-    user = columns.Text()
+    user = columns.Text(primary_key=True, clustering_order="DESC")
     tables = columns.List(value_type=columns.Text)
     pks = columns.List(value_type=columns.Text)
 
     class Meta:
-        unique_together = (('sensor_id', 'user'))
+        get_pk_field='sensor_id'
 
 # Examples
 # class products(DjangoCassandraModel):
