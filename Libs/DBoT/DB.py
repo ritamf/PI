@@ -9,7 +9,7 @@ class DB:
         self.session = self.cluster.connect(name)
         try:
             self.session.execute("create table metadata (tableName text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
-            self.session.execute("create table metadata_atributes (atribute text, tables list<text>, PRIMARY KEY(atribute) )")
+            #self.session.execute("create table metadata_atributes (atribute text, tables list<text>, PRIMARY KEY(atribute) )")
             self.session.execute("create table tableNum (pk int, num int, PRIMARY KEY(pk) )")
             self.session.execute("create table sensors (sensor_id text,user text ,tables list<text>, pks list<text>, PRIMARY KEY(user, sensor_id) )")
         except:
@@ -44,8 +44,9 @@ class DB:
 
         for key in flatJson.keys():                                 # Para cada chave do flatJson
             key = key.lower()
-            atrExists = self.session.execute("select atribute from metadata_atributes where atribute = '" + key + "'")
-            if atrExists.one() == None:
+            atrTables = self.session.execute("SELECT table_name from system_schema.tables where keyspace_name='pitest'")
+            atrList = [atr[0] for atr in atrTables]
+            if not key + '_table' in atrList :
                 self.session.execute("create table " + key + "_table(tableName text, pk text," + key + " text, PRIMARY KEY( tableName, " + key + ", pk))")
             lowerParList.append(key)                                # Recolher os parametros para a tabela de metadados
             strCommand = strCommand + ", " + key + " text"          # Adicionar à string do comando que cria a tabela principal
@@ -87,18 +88,18 @@ class DB:
     # Função de inserção nas tabelas secundárias
     def insertSecondaryTables(self, table, flatJson, pk):
         for key in flatJson.keys():                                                                                         # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
-            atribute = self.session.execute("SELECT * FROM metadata_atributes where atribute = '" + key.lower() + "'")      # Pesquisar se o atributo já está registado
-            tables = []
+            #atribute = self.session.execute("SELECT * FROM metadata_atributes where atribute = '" + key.lower() + "'")      # Pesquisar se o atributo já está registado
+            #tables = []
 
-            if not atribute:                                                                                                # Se não está adicionar
-                tables.append(table)
-                self.session.execute("insert into metadata_atributes(atribute, tables) values ('" + key.lower() + "', " + str(tables) + ") ")
-            else:                                                                                                           # Se está atualizar a lista de tabelas caso esta ainda não pertença
-                row = atribute.one()
-                tables = row[1]
-                if not table in tables:
-                    tables.append(table)
-                    self.session.execute("update metadata_atributes set tables = " + str(tables) + " where atribute = '" + key.lower() + "'")
+            #if not atribute:                                                                                                # Se não está adicionar
+                #tables.append(table)
+                #self.session.execute("insert into metadata_atributes(atribute, tables) values ('" + key.lower() + "', " + str(tables) + ") ")
+            #else:                                                                                                           # Se está atualizar a lista de tabelas caso esta ainda não pertença
+                #row = atribute.one()
+                #tables = row[1]
+                #if not table in tables:
+                    #tables.append(table)
+                    #self.session.execute("update metadata_atributes set tables = " + str(tables) + " where atribute = '" + key.lower() + "'")
 
             insertStr = "insert into " + key + "_table (tableName, pK, " + key + ") values('" + table + "','" + pk + "', '" + flatJson[key] + "')"
             self.session.execute(insertStr)                                                                                 # Inserção de dados nas tabelas secundárias
@@ -210,9 +211,9 @@ class DB:
 
         possibleTables = []                                                             # Através da tabela metadata_atributes perceber que tabelas possuem todos os atributos necessários ou seja que tabelas poderiam satisfazer a query
         for atr in atributes:
-            print(atr)
-            atributeQuery = self.session.execute("select tables from metadata_atributes where atribute = '" + atr + "'")
-            possibleTables.append(atributeQuery.one()[0])
+            atributeQuery = self.session.execute("select tablename from " + atr + "_table")
+            atrTables = [table[0] for table in atributeQuery]
+            possibleTables.append(atrTables)
 
         for row in tableQuery:                                              
             tableLists.append(row[0])
@@ -294,8 +295,9 @@ class DB:
 
         possibleTables = []                                                             # Através da tabela metadata_atributes perceber que tabelas possuem todos os atributos necessários ou seja que tabelas poderiam satisfazer a query
         for atr in atributes:
-            atributeQuery = self.session.execute("select tables from metadata_atributes where atribute = '" + atr + "'")
-            possibleTables.append(atributeQuery.one()[0])
+            atributeQuery = self.session.execute("select tablename from " + atr + "_table")
+            atrTables = [table[0] for table in atributeQuery]
+            possibleTables.append(atrTables)
 
         if len(possibleTables) == 0:                                                    # Lidar com o caso especifico em que projList = ['*'] e não existem condições de filtragem
             possibleTables = tables
