@@ -40,9 +40,7 @@ class DB:
             key = key.lower()
             lowerParList.append(key)                                # Recolher os parametros para a tabela de metadados
             strCommand = strCommand + ", " + key + " text"          # Adicionar à string do comando que cria a tabela principal
-            self.session.execute(
-                "create table " + table_name + "_" + key + " (tableName text, pk text," + key + " text, PRIMARY KEY( tableName, " + key + ", pk))")     # Criar a tabela secundária correspondente a essa chave
-
+            
         lowerParList.append('pk')
         strCommand = strCommand + ", PRIMARY KEY(pk)) "             # Acabar a string de comando após todos os parametros serem adicionados e correr o comando
         self.session.execute(strCommand)
@@ -82,9 +80,27 @@ class DB:
 
     # Função de inserção nas tabelas secundárias
     def insertSecondaryTables(self, table, flatJson, pk):
-          
-        for key in flatJson.keys():                                                                                         # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
-            atribute = self.session.execute("SELECT * FROM metadata_atributes where atribute = '" + key.lower() + "'")      # Pesquisar se o atributo já está registado
+        info = self.session.execute("SELECT table_name FROM system_schema.tables WHERE keyspace_name='pitest';")
+        existing_tables = []
+        for st in set(info):
+            existing_tables.append(str(st[0]))
+        print(existing_tables)
+        
+        for key in flatJson.keys(): 
+            if key.lower() in existing_tables:
+                print("inserir na tabela secundária: " + key)
+                self.session.execute("insert into " + key + " (tableName, pK, " + key + ") values('" + table + "','" + pk + "', '" + flatJson[key] + "')")                                                                                                 # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
+                print("key: " + key)
+                print("inserted key: " + flatJson[key])
+            else:                
+                print("criar nova tabela secundária: " + key)
+                self.session.execute("create table "  + key + " (tableName text, pk text," + key + " text, PRIMARY KEY( tableName, " + key + ", pk))")     # Criar a tabela secundária correspondente a essa chave
+                self.session.execute("insert into " + key + " (tableName, pK, " + key + ") values('" + table + "','" + pk + "', '" + flatJson[key] + "')")                                                                                                 # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
+                print("key: " + key)
+                print("inserted key: " + flatJson[key])
+  
+         
+        '''   atribute = self.session.execute("SELECT * FROM metadata_atributes where atribute = '" + key.lower() + "'")      # Pesquisar se o atributo já está registado
             tables = []
 
             if not atribute:                                                                                                # Se não está adicionar
@@ -99,7 +115,7 @@ class DB:
 
             insertStr = "insert into " + table + "_" + key + " (tableName, pK, " + key + ") values('" + table + "','" + pk + "', '" + flatJson[key] + "')"
             self.session.execute(insertStr)                                                                                 # Inserção de dados nas tabelas secundárias
-
+        '''
     #Função de inserção num sensor
     def insertIntoSensor(self, flatJson, pk_id, sensor_id, user):
 
