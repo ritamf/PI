@@ -9,7 +9,6 @@ class DB:
         self.session = self.cluster.connect(name)
         try:
             self.session.execute("create table metadata (tableName text, tableAtributes list<text>, PRIMARY KEY(tableName) )")
-            #self.session.execute("create table metadata_atributes (atribute text, tables list<text>, PRIMARY KEY(atribute) )")
             self.session.execute("create table tableNum (pk int, num int, PRIMARY KEY(pk) )")
             self.session.execute("create table sensors (sensor_id text,user text ,tables list<text>, pks list<text>, PRIMARY KEY(user, sensor_id) )")
         except:
@@ -45,7 +44,7 @@ class DB:
         for key in flatJson.keys():                                 # Para cada chave do flatJson
             key = key.lower()
             atrTables = self.session.execute("SELECT table_name from system_schema.tables where keyspace_name='pitest'")
-            atrList = [atr[0] for atr in atrTables]
+            atrList = [atr[0] for atr in atrTables]                 #Lista das tabelas secundárias que já possuem tabela criada
             if not key + '_table' in atrList :
                 self.session.execute("create table " + key + "_table(tableName text, pk text," + key + " text, PRIMARY KEY( tableName, " + key + ", pk))")
             lowerParList.append(key)                                # Recolher os parametros para a tabela de metadados
@@ -63,7 +62,7 @@ class DB:
         table_name = self.checkTable(flatJson)                  # Verificar se existe uma tabela em que os dados possam ser inseridos
         
         if not table_name:
-            table_name = self.createTables(flatJson)     # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
+            table_name = self.createTables(flatJson)            # Caso não exista chamar a função que cria que retorna o seu nome (da principal)
 
         new_table_name = table_name
 
@@ -82,27 +81,14 @@ class DB:
         print(strInsert)                                        # Print e executar o comando
         self.session.execute(strInsert)
 
-        self.insertSecondaryTables(table_name, flatJson, pk_id)                              # Inserir os dados nas tabelas adicionais para se poder fazer querying complexo
+        self.insertSecondaryTables(table_name, flatJson, pk_id) # Inserir os dados nas tabelas adicionais para se poder fazer querying complexo
         return new_table_name
 
     # Função de inserção nas tabelas secundárias
     def insertSecondaryTables(self, table, flatJson, pk):
-        for key in flatJson.keys():                                                                                         # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
-            #atribute = self.session.execute("SELECT * FROM metadata_atributes where atribute = '" + key.lower() + "'")      # Pesquisar se o atributo já está registado
-            #tables = []
-
-            #if not atribute:                                                                                                # Se não está adicionar
-                #tables.append(table)
-                #self.session.execute("insert into metadata_atributes(atribute, tables) values ('" + key.lower() + "', " + str(tables) + ") ")
-            #else:                                                                                                           # Se está atualizar a lista de tabelas caso esta ainda não pertença
-                #row = atribute.one()
-                #tables = row[1]
-                #if not table in tables:
-                    #tables.append(table)
-                    #self.session.execute("update metadata_atributes set tables = " + str(tables) + " where atribute = '" + key.lower() + "'")
-
+        for key in flatJson.keys():                 # Para cada parametro do flatJson adicionar a informação às tabelas adicionais e atualizar a metadata_atributes
             insertStr = "insert into " + key + "_table (tableName, pK, " + key + ") values('" + table + "','" + pk + "', '" + flatJson[key] + "')"
-            self.session.execute(insertStr)                                                                                 # Inserção de dados nas tabelas secundárias
+            self.session.execute(insertStr)         # Inserção de dados nas tabelas secundárias
 
     #Função de inserção num sensor
     def insertIntoSensor(self, flatJson, sensor_id, user):
@@ -177,7 +163,7 @@ class DB:
             result = self.session.execute(finalCommand)
             retList.append(result.one())
 
-        agrFlag = self.agrCheck(projList)
+        agrFlag = self.agrCheck(projList)                           # Verificar se existem agregações e selecionar a correta 
         if agrFlag == "AVG:":
             retList = self.averageHandler(retList)
         elif agrFlag == "MIN:":
@@ -261,7 +247,7 @@ class DB:
                     result = self.session.execute(strCommand)
                     retList.append(result.one())
 
-        agrFlag = self.agrCheck(projList)
+        agrFlag = self.agrCheck(projList)                                               # Verificar se existem agregações e selecionar a correta 
         if agrFlag == "AVG:":
             retList = self.averageHandler(retList)
         elif agrFlag == "MIN:":
@@ -327,7 +313,7 @@ class DB:
                     result = self.session.execute(strCommand)
                     retList.append(result.one())
             
-        agrFlag = self.agrCheck(projList)
+        agrFlag = self.agrCheck(projList)                                               # Verificar se existem agregações e selecionar a correta 
         if agrFlag == "AVG:":
             retList = self.averageHandler(retList)
         elif agrFlag == "MIN:":
@@ -343,12 +329,14 @@ class DB:
 
         return retList
 
+    # Função para verificar se os parametros possuem agregações e se sim retirar do parametro 
     def agrHandler(self, param):
         agrList = ["AVG:", "MIN:", "MAX:", "SUM:", "CNT:"]
         if param[0:4] in agrList:
             return param[4:len(param)]
         return param
 
+    # Função para verificar se existem agregações e retirar a agregação
     def agrCheck(self, projectionList):
         ret = None
         agrList = ["AVG:", "MIN:", "MAX:", "SUM:", "CNT:"]
@@ -362,6 +350,7 @@ class DB:
                     ret = "ERROR"
         return ret
 
+    # Função para retirar a média dos resultados
     def averageHandler(self, returnList):
 
         if not returnList[0][0].isnumeric():
@@ -373,50 +362,54 @@ class DB:
 
         return ["row[" + str(avg) + "]"]
 
+    # Função para retirar o minimo dos resultados
     def minimumHandler(self, returnList):
         if not returnList[0][0].isnumeric():
             print("Invalid parameter for average")
             return []
         
-        ret = returnList[0][0]
-        for val in returnList[1:len(returnList)-1]:
-            if  ret > val[0]:
-                ret = val[0]
+        ret = int(returnList[0][0])
+        for val in returnList[1:len(returnList)]:
+            if  ret > int(val[0]):
+                ret = int(val[0])
 
         return ["row[" + str(ret) + "]"]
 
+    # Função para retirar o maximo dos resultados
     def maximumHandler(self, returnList):
         if not returnList[0][0].isnumeric():
             print("Invalid parameter for average")
             return []
                 
-        ret = returnList[0][0]
-        for val in returnList[1:len(returnList)-1]:
-            if  ret < val[0]:
-                ret = val[0]
+        ret = int(returnList[0][0])
+        for val in returnList[1:len(returnList)]:
+            if  ret < int(val[0]):
+                ret = int(val[0])
 
         return ["row[" + str(ret) + "]"]
 
+    # Função para retirar a soma dos resultados
     def sumHandler(self, returnList):
         if not returnList[0][0].isnumeric():
             print("Invalid parameter for average")
             return []
         
-        valueList = [val[0] for val in returnList]
+        valueList = [int(val[0]) for val in returnList]
         ret = sum(valueList)
 
         return ["row[" + str(ret) + "]"]
-        
+    
+    # Função para retirar o numero de resultados
     def countHandler(self, returnList):
         return ["row[" + str(len(returnList)) + "]"]
 
-    #Função para apresentar as tabelas de registos existentes e que atributos possui cada tabela
+    # Função para apresentar as tabelas de registos existentes e que atributos possui cada tabela
     def showTables(self):
         tableRows = self.session.execute("Select * from metadata")
         for row in tableRows:
             print(row[0] + " - " + str(row[1]))
 
-    #Função para mostrar os utilizadores existentes na base de dados
+    # Função para mostrar os utilizadores existentes na base de dados
     def showUsers(self):
         userRows = self.session.execute("Select * from sensors")
         users = []
@@ -428,7 +421,7 @@ class DB:
         for user in users:
             print(user)
 
-    #Função que mostra as tabelas e atributos respetivos às mesmas mas apenas aquelas nas quais o utilizador tem registos
+    # Função que mostra as tabelas e atributos respetivos às mesmas mas apenas aquelas nas quais o utilizador tem registos
     def showMyTables(self, user):
         userRows = self.session.execute("Select * from sensors where user = '" + user + "'" )
         tables = []
@@ -444,6 +437,7 @@ class DB:
             tableInfo = result.one()
             print(tableInfo[0] + " - " + str(tableInfo[1]))
     
+    # Função para printar resultados
     def printResults(resultList):
         rs = ""
 
