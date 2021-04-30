@@ -19,6 +19,11 @@ from webapp import views
 urlpatterns = [
 
 
+    path('grafana/', views.datasource_test, name="datasource_test"),
+    path('grafana/search', views.datasource_search, name="datasource_available_search"),
+    path('grafana/query', views.datasource_query, name="datasource_query"),
+    path('grafana/annotations', views.datasource_annotations, name="datasource_annotations"),
+
     path('sensors/', views.sensors_overview, name="sensors_overview"),
     path('sensors/list/', views.sensors_get, name="sensors_list"),
     path('sensors/detail/<str:key>/', views.sensors_get_one, name="sensors_detail"),

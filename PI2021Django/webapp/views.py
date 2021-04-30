@@ -1,4 +1,4 @@
-import uuid
+import json
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
@@ -9,6 +9,32 @@ from .serializers import sensorsSerializers# ,productsSerializers, attributesSer
 
 from django.core.cache import cache
 
+from Libs import DB
+
+# 'grafana/'
+@api_view(['GET'])
+def datasource_test(self):
+    content = {'Test connection': 'datasource config page test'}
+    return Response(content, status=status.HTTP_200_OK)
+
+# 'grafana/search'
+@api_view(['POST'])
+def datasource_search(request):
+    if request.method == 'POST':
+        return Response({"data": request.data})
+    return Response([{"message": "Hello, world!"}])
+
+# 'grafana/query'
+@api_view(['GET'])
+def datasource_query(self):
+    content = {'Test connection': 'datasource config page test'}
+    return Response(content, status=status.HTTP_200_OK)
+
+# 'grafana/annotations'
+@api_view(['GET'])
+def datasource_annotations(self):
+    content = {'Test connection': 'datasource config page test'}
+    return Response(content, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
