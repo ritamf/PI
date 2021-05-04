@@ -53,3 +53,30 @@ http://127.0.0.1:8000/sensors/detail/0001/
 http://127.0.0.1:8000/sensors/list/
 
 http://127.0.0.1:8000/sensors/create/
+
+# Grafana
+
+### Comandos básicos grafana (iniciar e parar servidor)
+
+```bash
+$ service grafana-server {start|stop|restart|force-reload|status}
+```
+
+### Comandos que fiz antes de poder meter o server a correr (não sei quais são precisos refazer)
+```bash
+$ wget https://dl.grafana.com/oss/release/grafana_7.5.5_amd64.deb
+
+$ sudo apt-get install -y adduser libfontconfig1
+
+$ sudo dpkg -i grafana_7.5.5_amd64.deb
+
+$ sudo systemctl status grafana-server
+
+$ sudo enable grafana-server
+```
+
+### Install JSON API Grafana Datasource
+
+```bash
+sudo grafana-cli plugins install simpod-json-datasource
+```
