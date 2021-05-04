@@ -72,11 +72,11 @@ $ sudo dpkg -i grafana_7.5.5_amd64.deb
 
 $ sudo systemctl status grafana-server
 
-$ sudo enable grafana-server
+$ sudo netstat -atunp | grep 3000 #nao necessario
 ```
 
 ### Install JSON API Grafana Datasource
 
 ```bash
-sudo grafana-cli plugins install simpod-json-datasource
+$ sudo grafana-cli plugins install simpod-json-datasource
 ```
