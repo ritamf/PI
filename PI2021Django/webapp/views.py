@@ -67,8 +67,8 @@ def sensors_get(request):
             else:
                 values = []
                 for c in campo:
-                    v = db.getAllValuesOn(c)
-                    values.append(v)
+                    dic = {c: db.getAllValuesOn(c)}
+                    values.append(dic)
 
         else:
             values = db.getSensors(user)
