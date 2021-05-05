@@ -44,30 +44,53 @@ def sensors_overview(request):
     }
     return Response(api_urls)
 
-#sensors/list
 @api_view(['GET'])
 def sensors_get(request):
-    sensor = sensors.objects.all()
-    searlizer = sensorsSerializers(sensor, many=True)
-    return Response(searlizer.data)
+    user = "Marta"  # need to know how we know who is logged in
+    db = get_DB_client()
+    # localhost/sensor=/search/by=campo
+    if 'sensor' in request.GET:
+        sensor = request.GET['sensor']
+        if 'campo' in request.GET:
+            campo = request.GET['campo']  # need to make sure is a list
+            if 'param' in request.GET:
+                param = request.GET['param']  # need to make sure is a dict
+                values = db.queryPerSensor(user, sensor, campo, param)
+            else:
+                values = db.queryPerSensor(user, sensor, campo, {})
+        else:
+            values = db.queryPerSensor(user, sensor, ['*'], {})
+    else:
+        if 'campo' in request.GET:
+            campo = request.GET['campo']
+            if 'param' in request.GET:
+                param = request.GET['param']  # need to make sure is a dict
+                values = db.queryPerUser(user, campo, param)
+            else:
+                values = []
+                for c in campo:
+                    v = db.getAllValuesOn(c)
+                    values.append(v)
 
-#sensors/details/<str:pk>
-@api_view(['GET'])
-def sensors_get_one(request, key):
-    sensor = sensors.objects.get(sensor_id=key)
-    searlizer = sensorsSerializers(sensor, many=False)
-    return Response(searlizer.data)
+        else:
+            sensors = db.getSensors(user)
 
-#sensors/create
+    if 'count' in request.GET:
+        count = len(values)
+
+    #return JsonResponse(values) ?? nao sei o que tenho que retornar
+
+
+# sensors/create
 @api_view(['POST'])
 def sensors_post(request):
-    sensor = sensors.if_not_exists().create(
-        sensor_id=request.data['sensor_id'],
-        user=request.data['user'],
-        tables=request.data['tables'],
-        pks=request.data['pks']
-    )
-    return Response(sensor, status=status.HTTP_201_CREATED)
+    db = get_DB_client()
+    json_file = request.data['json_file']
+    sensor = request.data['sensor']
+    user = "Marta"  # need to know who is logged in
+    db.insertInto(json_file, sensor, user)
+    return Response(status=status.HTTP_201_CREATED)
+
 
 
 
