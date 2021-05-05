@@ -3,13 +3,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
-
+from DBoT import DB
 from .models import sensors #, products, attributes
 from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
 
 from django.core.cache import cache
-
-from Libs import DB
 
 # 'grafana/'
 @api_view(['GET'])
@@ -47,7 +45,7 @@ def sensors_overview(request):
 @api_view(['GET'])
 def sensors_get(request):
     user = "Marta"  # need to know how we know who is logged in
-    db = get_DB_client()
+    db = DB.DB()
     # localhost/sensor=/search/by=campo
     if 'sensor' in request.GET:
         sensor = request.GET['sensor']
@@ -73,10 +71,10 @@ def sensors_get(request):
                     values.append(v)
 
         else:
-            sensors = db.getSensors(user)
+            values = db.getSensors(user)
 
     if 'count' in request.GET:
-        count = len(values)
+        values = len(values)
 
     #return JsonResponse(values) ?? nao sei o que tenho que retornar
 
@@ -84,7 +82,7 @@ def sensors_get(request):
 # sensors/create
 @api_view(['POST'])
 def sensors_post(request):
-    db = get_DB_client()
+    db = DB.DB()
     json_file = request.data['json_file']
     sensor = request.data['sensor']
     user = "Marta"  # need to know who is logged in
