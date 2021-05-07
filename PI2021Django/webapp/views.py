@@ -18,9 +18,18 @@ def datasource_test(self):
 # 'grafana/search'
 @api_view(['POST'])
 def datasource_search(request):
-    if request.method == 'POST':
-        return Response({"data": request.data})
-    return Response([{"message": "Hello, world!"}])
+    # if request.method == 'POST':
+    #     return Response({"data": request.data})
+    # return Response([{"message": "Hello, world!"}])
+    req = request.data
+    check_if_req_contains_type = "type" in req
+
+    if check_if_req_contains_type == True:
+        type_format = req["type"]
+        target = req["target"]
+    else:
+        target = req["target"]
+    return Response(type_format)
 
 # 'grafana/query'
 @api_view(['GET'])
