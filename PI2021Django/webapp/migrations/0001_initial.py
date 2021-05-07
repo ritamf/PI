@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
 
     initial = True
@@ -12,10 +11,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='products',
+            name='sensors',
             fields=[
-                ('id', models.CharField(max_length=64, primary_key=True, serialize=False)),
-                ('attributes', models.JSONField()),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('sensor_id', columns.Text(primary_key=True)),
+                ('user', columns.Text(primary_key=True, clustering_order="DESC")),
+                ('tables',columns.List(value_type=columns.Text)),
+                ('pks',columns.List(value_type=columns.Text)),
+
             ],
         ),
     ]
