@@ -29,7 +29,7 @@ def datasource_search(request):
         target = req["target"]
     else:
         target = req["target"]
-    return Response(type_format)
+    return Response(target)
 
 # 'grafana/query'
 @api_view(['GET'])
