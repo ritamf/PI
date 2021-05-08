@@ -1,9 +1,9 @@
-import uuid
+import json
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
-
+from DBoT import DB
 from .models import sensors #, products, attributes
 from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
 from .models import metadata
@@ -11,6 +11,53 @@ from .serializers import metadataSerializers
 
 from django.core.cache import cache
 
+metric_finders = {}
+
+# 'grafana/'
+@api_view(['GET'])
+def datasource_test(self):
+    return Response(status=status.HTTP_200_OK)
+
+# 'grafana/search'
+@api_view(['POST'])
+def datasource_search(request):
+
+    db = DB.DB()
+    user = "Marta"
+
+    req = json.loads(request.data)
+    target = req["target"]
+
+    if ':' in target:
+        finder, target = target.split(':', 1)
+    else:
+        finder = target
+
+    if not target or finder not in metric_finders:
+        metrics = []
+        if target == '*':
+            metrics += metric_finders.keys() + metric_readers.keys()
+        else:
+            metrics.append(target)
+
+        return json_dump(metrics)
+    else:
+        return json_dump(list(metric_finders[finder](target)))
+
+
+
+
+# 'grafana/query'
+@api_view(['GET'])
+def datasource_query(self):
+    content = {'Test connection': 'datasource config page test'}
+    return Response(content, status=status.HTTP_200_OK)
+
+# 'grafana/annotations'
+@api_view(['GET'])
+def datasource_annotations(self):
+    content = {'Test connection': 'datasource config page test'}
+    return Response(content, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -20,38 +67,52 @@ def sensors_overview(request):
     }
     return Response(api_urls)
 
-#sensors/list
 @api_view(['GET'])
 def sensors_get(request):
-    sensor = sensors.objects.all()
-    searlizer = sensorsSerializers(sensor, many=True)
-    return Response(searlizer.data)
+    user = "Marta"  # need to know how we know who is logged in
+    db = DB.DB()
+    # localhost/sensor=/search/by=campo
+    if 'sensor' in request.GET:
+        sensor = request.GET['sensor']
+        if 'campo' in request.GET:
+            campo = request.GET['campo']  # need to make sure is a list
+            if 'param' in request.GET:
+                param = request.GET['param']  # need to make sure is a dict
+                values = db.queryPerSensor(user, sensor, campo, param)
+            else:
+                values = db.queryPerSensor(user, sensor, campo, {})
+        else:
+            values = db.queryPerSensor(user, sensor, ['*'], {})
+    else:
+        if 'campo' in request.GET:
+            campo = request.GET['campo']
+            if 'param' in request.GET:
+                param = request.GET['param']  # need to make sure is a dict
+                values = db.queryPerUser(user, campo, param)
+            else:
+                values = []
+                for c in campo:
+                    dic = {c: db.getAllValuesOn(c)}
+                    values.append(dic)
 
-#sensors/details/<str:pk>
-@api_view(['GET'])
-def sensors_get_one(request, key):
-    sensor = sensors.objects.get(sensor_id=key)
-    searlizer = sensorsSerializers(sensor, many=False)
-    return Response(searlizer.data)
+        else:
+            values = db.getSensors(user)
 
-#sensors/create
+    if 'count' in request.GET:
+        values = len(values)
+
+    #return JsonResponse(values) ?? nao sei o que tenho que retornar
+
+
+# sensors/create
 @api_view(['POST'])
 def sensors_post(request):
-    sensor = sensors.if_not_exists().create(
-        sensor_id=request.data['sensor_id'],
-        user=request.data['user'],
-        tables=request.data['tables'],
-        pks=request.data['pks']
-    )
-    return Response(sensor, status=status.HTTP_201_CREATED)
-
-#sensors/list
-@api_view(['GET'])
-def metadata_overview(request):
-    api_urls = {
-        'List': 'metadata/list/',
-    }
-    return Response(api_urls)
+    db = DB.DB()
+    json_file = request.data['json_file']
+    sensor = request.data['sensor']
+    user = "Marta"  # need to know who is logged in
+    db.insertInto(json_file, sensor, user)
+    return Response(status=status.HTTP_201_CREATED)
 
 
 
