@@ -18,18 +18,27 @@ def datasource_test(self):
 # 'grafana/search'
 @api_view(['POST'])
 def datasource_search(request):
-    # if request.method == 'POST':
-    #     return Response({"data": request.data})
-    # return Response([{"message": "Hello, world!"}])
-    req = request.data
-    check_if_req_contains_type = "type" in req
+    db = DB.DB()
+    user = "Marta"
 
-    if check_if_req_contains_type == True:
-        type_format = req["type"]
-        target = req["target"]
+    req = json.loads(request.data)
+    target = req["target"]
+
+    if ':' in target:
+        finder, target = target.split(':', 1)
     else:
-        target = req["target"]
-    return Response(target)
+        finder = target
+
+    if not target or finder not in metric_finders:
+        metrics = []
+        if target == '*':
+            metrics += metric_finders.keys() + metric_readers.keys()
+        else:
+            metrics.append(target)
+
+        return json_dump(metrics)
+    else:
+        return json_dump(list(metric_finders[finder](target)))
 
 # 'grafana/query'
 @api_view(['GET'])
@@ -50,42 +59,6 @@ def sensors_overview(request):
         'List': 'sensors/list/',
     }
     return Response(api_urls)
-
-@api_view(['GET'])
-def sensors_get(request):
-    user = "Marta"  # need to know how we know who is logged in
-    db = DB.DB()
-    # localhost/sensor=/search/by=campo
-    if 'sensor' in request.GET:
-        sensor = request.GET['sensor']
-        if 'campo' in request.GET:
-            campo = request.GET['campo']  # need to make sure is a list
-            if 'param' in request.GET:
-                param = request.GET['param']  # need to make sure is a dict
-                values = db.queryPerSensor(user, sensor, campo, param)
-            else:
-                values = db.queryPerSensor(user, sensor, campo, {})
-        else:
-            values = db.queryPerSensor(user, sensor, ['*'], {})
-    else:
-        if 'campo' in request.GET:
-            campo = request.GET['campo']
-            if 'param' in request.GET:
-                param = request.GET['param']  # need to make sure is a dict
-                values = db.queryPerUser(user, campo, param)
-            else:
-                values = []
-                for c in campo:
-                    dic = {c: db.getAllValuesOn(c)}
-                    values.append(dic)
-
-        else:
-            values = db.getSensors(user)
-
-    if 'count' in request.GET:
-        values = len(values)
-
-    #return JsonResponse(values) ?? nao sei o que tenho que retornar
 
 
 # sensors/create
