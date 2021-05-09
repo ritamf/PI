@@ -10,12 +10,6 @@ A software product which can collect and analyse IoT data.
 pip install -r requirements.txt
 ```
 
-2. Run the code.
-
-```bash
-python dataModelTest1.py
-```
-
 ## Arquitecture
 
 ![Arquitecture](./arquitecture/arquitecture.png)
@@ -35,66 +29,51 @@ Json3 = {"sensorId" : "0001",
 "temperature" : "10"}
 ```
 
-* Metadata(tableName, tableAtributes) PRIMARY KEY(tableName)
+* Metadata(atribute, pk) PRIMARY KEY(atribute, pk)
 
 []()|[]()
 ---     |    ---
-'table1' | ['sensorId', 'timeStamp', 'temperature', 'pk']
-'table2' | ['sensorId', 'temperature']
+'temperature' | 'pk1uuid'
+'sensorid' | 'pk1uuid'
+'timestamp' | 'pk1uuid'
+'temperature' | 'pk2uuid'
+'sensorid' | 'pk2uuid'
+'timestamp' | 'pk2uuid'
+'temperature' | 'pk3uuid'
+'sensorid' | 'pk3uuid'
 []()|[]()
 
 
-* table1(pk, sensorId, timeStamp, temperature) PRIMARY KEY(pk)
-
-    * pk is an uuid automatically generated that might be passed through API Rest
-
-[]()|[]()|[]()|[]()
----     |    ---  | --- | ---
-Uuid1 | 0001 | 2020-06-01 10:10:10 | 10
-Uuid2 | 0002 | 2020-06-01 10:10:10 | 11
-[]() | []() | []() | []()
-
-* table1_sendorId(tableName, pk, sensorId) PRIMARY KEY(tableName, sensorId)
+* Sensors(user, sensorId, pkList) PRIMARY KEY(user, sensorId)
 
 []()|[]()|[]()
----     |    ---  | --- 
-'table1' | uuid1 | 0001
-'table1' | uuid2 | 0002
-[]()|[]()|[]()
+---     |    ---     |    ---
+'Luís' | '1' | ['pk1uuid', 'pk3uuid']
+'Marta' | '2' | ['pk2uuid']
+[]()|[]()
 
-* table1_timeStamp(tableName, pk, timeStamp) PRIMARY KEY(tableName, timeStamp)
+* Temperature_table(pk, temperature) PRIMARY KEY(pk, temperature)
 
-[]()|[]()|[]()
----     |    ---  | --- 
-'table1' | uuid | 2020-06-01 10:10:10
-'table1' | uuid2 | 2020-06-01 10:10:10
-[]()|[]()|[]()
+[]()|[]()
+---     |    ---
+'pk1uuid' | '10'
+'pk2uuid' | '11'
+'pk3uuid' | '10'
+[]()|[]()
 
-* table1_temperature(tableName, pk, temperature) PRIMARY KEY(tableName, temperature)
+* Sensorid_table(pk, sensorid) PRIMARY KEY(pk, sensorid)
 
-[]()|[]()|[]()
----     |    ---  | --- 
-'table1' | uuid | 10
-'table1' | Uuid2 | 11
-[]()|[]()|[]()
+[]()|[]()
+---     |    ---
+'pk1uuid' | '0001'
+'pk2uuid' | '0002'
+'pk3uuid' | '0001'
+[]()|[]()
 
-* table2(pk, sensorId, temperature) PRIMARY KEY(pk)
+* Timestamp_table(pk, timestamp) PRIMARY KEY(pk, timestamp)
 
-[]()|[]()|[]()
----     |    ---  | --- 
-Uuid3 | 0001 | 10
-[]()|[]()|[]()
-
-* table2_sendorId(tableName, pk, sensorId) PRIMARY KEY(tableName, sensorId)
-
-[]()|[]()|[]()
----     |    ---  | --- 
-'table2' | uuid3 | 0001
-[]()|[]()|[]()
-
-* table2_temperature(tableName, pk, temperature) PRIMARY KEY(tableName, temperature)
-
-[]()|[]()|[]()
----     |    ---  | --- 
-'table2' | Uuid3 | 10
-[]()|[]()|[]()
+[]()|[]()
+---     |    ---
+'pk1uuid' | '2020-06-01 10:10:10'
+'pk2uuid' | '2020-06-01 10:10:10'
+[]()|[]()
