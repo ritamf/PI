@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 ## Arquitecture
 
-![Arquitecture](./arquitecture/arquitecture.png)
+![Arquitecture](./imgs/arquitecture.png)
 
 ## Data Model
 
