@@ -3,11 +3,57 @@ from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
-from DBoT import DB
+
+from django.http import HttpResponse
+from django.shortcuts import render
+
 from .models import sensors #, products, attributes
 from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
 
 from django.core.cache import cache
+
+from DBoT import DB
+from DBoT import JsonParser
+
+# '/insert_test'
+@api_view(['POST'])
+def db_insert_test(request,user,sensorid):
+
+    db = DB.DB()
+
+    req = json.dumps(request.data)
+
+    jsonParserInit = JsonParser.JsonParser()
+
+    readJson = jsonParserInit.flat_json(req)
+
+    db.insertIntoSensor(readJson, sensorid, user)
+
+    return Response(readJson)
+
+# '/'
+def home_page(request, *args, **kwargs):
+    print(args, kwargs)
+    
+    return render(request, "home.html", {})
+
+# '/insert'
+def db_insert(request, *args, **kwargs):
+    print(args, kwargs)
+
+    context = {
+        'user': 'testuser',
+        'sensorid': 1,
+    }
+    
+    return render(request, "insert.html", context)
+
+# '/query'
+def db_query(request, *args, **kwargs):
+    print(args, kwargs)
+    
+    return render(request, "query.html", {})
+
 
 # 'grafana/'
 @api_view(['GET'])
@@ -18,27 +64,19 @@ def datasource_test(self):
 # 'grafana/search'
 @api_view(['POST'])
 def datasource_search(request):
-    db = DB.DB()
-    user = "Marta"
+    # if request.method == 'POST':
+    #     return Response({"data": request.data})
+    # return Response([{"message": "Hello, world!"}])
+    req = request.data
+    check_if_req_contains_type = "type" in req
 
-    req = json.loads(request.data)
-    target = req["target"]
-
-    if ':' in target:
-        finder, target = target.split(':', 1)
+    if check_if_req_contains_type == True:
+        type_format = req["type"]
+        target = req["target"]
     else:
-        finder = target
+        target = req["target"]
 
-    if not target or finder not in metric_finders:
-        metrics = []
-        if target == '*':
-            metrics += metric_finders.keys() + metric_readers.keys()
-        else:
-            metrics.append(target)
-
-        return json_dump(metrics)
-    else:
-        return json_dump(list(metric_finders[finder](target)))
+    return Response(target)
 
 # 'grafana/query'
 @api_view(['GET'])
@@ -70,6 +108,21 @@ def sensors_post(request):
     user = "Marta"  # need to know who is logged in
     db.insertInto(json_file, sensor, user)
     return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def sensors_get(request):
+    api_urls = {
+        'List': 'sensors/list/',
+    }
+    return Response(api_urls)
+
+@api_view(['GET'])
+def sensors_get_one(request):
+    api_urls = {
+        'List': 'sensors/list/',
+    }
+    return Response(api_urls)
+
 
 
 

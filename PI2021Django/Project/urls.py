@@ -18,6 +18,11 @@ from webapp import views
 
 urlpatterns = [
 
+    path('', views.home_page, name="home_page"),
+    path('query/', views.db_query, name="db_query"),
+    path('insert/', views.db_insert, name="db_insert"),
+    
+    path('insert_test/<str:user>/<str:sensorid>', views.db_insert_test, name="db_insert_test"),
 
     path('grafana/', views.datasource_test, name="datasource_test"),
     path('grafana/search', views.datasource_search, name="datasource_available_search"),
@@ -28,14 +33,4 @@ urlpatterns = [
     path('sensors/list/', views.sensors_get, name="sensors_list"),
     path('sensors/detail/<str:key>/', views.sensors_get_one, name="sensors_detail"),
     path('sensors/create/', views.sensors_post, name="sensors_create"),
-    # path('sensors/update/<str:key>/', views.sensors_update, name="sensors_update"),
-    # path('sensors/delete/<str:key>/', views.sensors_delete, name="sensors_delete"),
-
-    # path('products/', views.overview, name="overview"),
-    # path('products/list/', views.get, name="list"),
-    # path('products/detail/<str:key>/', views.get_one, name="detail"),
-    # path('products/create/', views.post, name="create"),
-    # path('products/create_list/', views.post_list, name="create"),
-    # path('products/update/<str:key>/', views.update, name="update"),
-    # path('products/delete/<str:key>/', views.delete, name="delete"),
 ]

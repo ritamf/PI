@@ -1,2 +1,1 @@
 cassandra_driver==3.22.0
-git+git://github.com/LuisValentim1/PI_DBOT_Lib@main#egg=Libs

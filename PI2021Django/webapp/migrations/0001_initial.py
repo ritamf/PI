@@ -10,15 +10,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='sensors',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sensor_id', columns.Text(primary_key=True)),
-                ('user', columns.Text(primary_key=True, clustering_order="DESC")),
-                ('tables',columns.List(value_type=columns.Text)),
-                ('pks',columns.List(value_type=columns.Text)),
-
-            ],
-        ),
     ]

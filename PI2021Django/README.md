@@ -12,7 +12,7 @@ sudo service cassandra start
 
 cqlsh
 
-CREATE KEYSPACE "db" WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+CREATE KEYSPACE "db" WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
 
 create table db.sensors (sensor_id text,user text ,tables list<text>, pks list<text>, PRIMARY KEY(user, sensor_id) );
 
