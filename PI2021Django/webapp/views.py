@@ -7,7 +7,6 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from .models import sensors #, products, attributes
 from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
 
 from django.core.cache import cache
@@ -15,9 +14,9 @@ from django.core.cache import cache
 from DBoT import DB
 from DBoT import JsonParser
 
-# '/insert_test'
+# '/insert_into_db
 @api_view(['POST'])
-def db_insert_test(request,user,sensorid):
+def insert_into_db(request,user,sensorid):
 
     db = DB.DB()
 
@@ -31,6 +30,48 @@ def db_insert_test(request,user,sensorid):
 
     return Response(readJson)
 
+# '/query_db'
+@api_view(['POST'])
+def query_db(request,user,sensorid):
+
+    db = DB.DB()
+
+    req = request.data
+
+    #{"conditions": {"temperature": "=12"}, "attributes": ["temperature"]}
+    #{"conditions": {"temperature": "=12"}, "attributes": ["temperature"], "from_ts": "2020-06-02 10:10:10", "to_ts": "2021-08-01 22:36:20.785976"} 2021-05-16 12:06:38.843256
+    conditions = req["conditions"]
+    print(conditions)
+    attributes = req["attributes"]
+    print(attributes)
+
+    from_ts = req["from_ts"]
+    to_ts = req["to_ts"]
+
+    if sensorid != "all":
+        if attributes is not None:
+            if conditions is not None:
+                if from_ts != "None":
+                    values = db.rangeQueryPerSensor(user, sensorid, attributes, conditions, from_ts, to_ts)
+                else:
+                    values = db.queryPerSensor(user, sensorid, attributes, conditions)
+            else:
+                values = db.queryPerSensor(user, sensorid, attributes, {})
+    else:
+        if attributes is not None:
+            if conditions is not None:
+                if from_ts != "None":
+                    values = db.angeQueryPerUser(user, attributes, conditions, from_ts, to_ts)
+                else:
+                    values = db.queryPerUser(user, attributes, conditions)
+            else:
+                values = []
+                for c in attributes:
+                    dic = {c: db.getAllValuesOn(c)}
+                    values.append(dic)
+
+    return Response(values)
+
 # '/'
 def home_page(request, *args, **kwargs):
     print(args, kwargs)
@@ -38,21 +79,31 @@ def home_page(request, *args, **kwargs):
     return render(request, "home.html", {})
 
 # '/insert'
-def db_insert(request, *args, **kwargs):
+def db_insert_page(request, *args, **kwargs):
     print(args, kwargs)
 
     context = {
-        'user': 'testuser',
+        'user': 'admin',
         'sensorid': 1,
     }
     
     return render(request, "insert.html", context)
 
 # '/query'
-def db_query(request, *args, **kwargs):
+def db_query_page(request, *args, **kwargs):
     print(args, kwargs)
+
+    db = DB.DB()
+
+    sensors_list = db.getSensors('admin')
+
     
-    return render(request, "query.html", {})
+    context = {
+        'user': 'admin',
+        'sensors': sensors_list,
+    }
+    
+    return render(request, "query.html", context)
 
 
 # 'grafana/'

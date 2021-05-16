@@ -1,7 +1,5 @@
 from cassandra.cqlengine import columns
 from rest_framework import serializers
-from .models import sensors #, products
-
 
 class sensorsSerializers(serializers.ModelSerializer):
     serializer_field_mapping = (
@@ -11,17 +9,6 @@ class sensorsSerializers(serializers.ModelSerializer):
 
     # serializer_field_mapping[columns.Map] = columns.Map
 
-    class Meta:
-        model = sensors
-        fields = '__all__'
-
-    def to_representation(self, obj):
-        return {
-            "sensor_id": str(obj.sensor_id),
-            "user": str(obj.user),
-            "tables": obj.tables,
-            "pks": obj.pks,
-        }
 
 
 # class productsSerializers(serializers.ModelSerializer):

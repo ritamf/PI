@@ -5,9 +5,47 @@
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <style>
 body {font-family: "Lato", sans-serif}
 .mySlides {display: none}
+
+input[type=text], select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button[type=button] {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type=button]:hover {
+  background-color: #45a049;
+}
+
+#form_div {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+#result_div {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
 
 .topnav {
   overflow: hidden;
@@ -33,13 +71,93 @@ body {font-family: "Lato", sans-serif}
   color: white;
 }
 </style>
+<script>
+
+//{ "conditions": {"temperature": "=12"}, "attributes": ["temperature"]}
+
+  function queryDB(){
+
+    document.getElementById("result_div").innerHTML = ""
+
+    var result_div = document.getElementById("result_div");
+
+    var conditions = JSON.parse(document.getElementById("conditions").value)
+    var attributes = JSON.parse(document.getElementById("attributes").value)
+    var from_ts = document.getElementById("from_ts").value
+    var to_ts = document.getElementById("to_ts").value
+    var sensor_id = document.getElementById("sensor_id").value
+    console.log(sensor_id)
+    var url2 = '/query_db/' + 'admin/' + sensor_id
+    data_dict = JSON.stringify({ "conditions": conditions, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
+    console.log(typeof data_dict);
+    console.log(data_dict)
+    $.ajax({ 
+    headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' 
+    },
+    url: url2,
+    type: 'POST',
+    data: data_dict,
+    success: function(result) {
+      for( const element of result){
+        document.getElementById("result_div").innerHTML += JSON.stringify(element);
+        document.getElementById("result_div").innerHTML += "<br>"
+      }
+      //document.getElementById("result_div").innerHTML = JSON.stringify(result);
+      result_div.style.visibility = "visible";
+      },
+      error: function(result) {
+        console.log('error')
+      }
+  });
+  }
+  
+</script>
 <body>
 
 <!-- Navbar -->
 <div class="topnav">
   <a href="{% url 'home_page' %}">HOME</a>
-  <a href="{% url 'db_insert' %}">INSERT</a>
-  <a class="active" href="{% url 'db_query' %}">QUERY</a>
+  <a href="{% url 'db_insert_page' %}">INSERT</a>
+  <a class="active" href="{% url 'db_query_page' %}">QUERY</a>
+</div>
+
+<div id="form_div">
+  <form>
+    <!-- <label for="JSON_input">JSON input</label>
+    <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input.."> -->
+      <label>Sensor target</label>
+      <select id="sensor_id" class="form-control select2" name="comp_type" style="width: 100%;">
+        <!-- <option disabled="true" selected >Company Type</option> -->
+        {% for i in sensors %}
+        <option value="{{ i }}">{{ i }}</option>
+        {% endfor %}
+
+        <option value="all">All</option>
+      </select>
+
+      <label for="attributes">Attributes</label>
+    <input type="text" id="attributes" name="attributes" placeholder='Example: ["temperature"]'>
+
+    <label for="conditions">Conditions</label>
+    <input type="text" id="conditions" name="conditions" placeholder='Example: {"temperature": "=12"}'>
+
+    <label for="from_ts">From</label>
+    <input type="text" id="from_ts" name="from_ts" placeholder="Query from this date.." value="None">
+
+    <label for="to_ts">To</label>
+    <input type="text" id="to_ts" name="to_ts" placeholder="Query to this date.." value="None">
+
+
+    <button type="button" onclick="queryDB()">Query</button>
+  </form>
+</div>
+
+<div id="result_div" style="visibility: hidden;">
+  This is my DIV element.
+</div>
+  
 </div>
 </body>
 </html>

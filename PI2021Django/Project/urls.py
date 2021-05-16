@@ -19,10 +19,11 @@ from webapp import views
 urlpatterns = [
 
     path('', views.home_page, name="home_page"),
-    path('query/', views.db_query, name="db_query"),
-    path('insert/', views.db_insert, name="db_insert"),
+    path('query/', views.db_query_page, name="db_query_page"),
+    path('insert/', views.db_insert_page, name="db_insert_page"),
     
-    path('insert_test/<str:user>/<str:sensorid>', views.db_insert_test, name="db_insert_test"),
+    path('insert_into_db/<str:user>/<str:sensorid>', views.insert_into_db, name="insert_into_db"),
+    path('query_db/<str:user>/<str:sensorid>', views.query_db, name="query_db"),
 
     path('grafana/', views.datasource_test, name="datasource_test"),
     path('grafana/search', views.datasource_search, name="datasource_available_search"),

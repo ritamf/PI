@@ -4,7 +4,7 @@ from cassandra.cqlengine.management import sync_table
 from django_cassandra_engine.models import DjangoCassandraModel
 # from viewfow.fields import CompositeKey
 
-class sensors(DjangoCassandraModel):
+class sensors2(DjangoCassandraModel):
     sensor_id = columns.Text(primary_key=True)
     user = columns.Text(primary_key=True, clustering_order="DESC")
     tables = columns.List(value_type=columns.Text)

@@ -70,7 +70,7 @@ button[type=submit]:hover {
   function insertIntoDB(){
     var json = document.getElementById("JSON_input").value
     var sensorid = document.getElementById("sensorID").value
-    var url2 = '/insert_test/' + 'admin/' + sensorid
+    var url2 = '/insert_into_db/' + 'admin/' + sensorid
     console.log(json)
     $.ajax({ 
     headers: { 
@@ -88,10 +88,6 @@ button[type=submit]:hover {
       }
   });
   }
-
-  function insertIntoDB2(){
-    console.log("yo2")
-  }
   
 </script>
 <body>
@@ -99,8 +95,8 @@ button[type=submit]:hover {
 <!-- Navbar -->
 <div class="topnav">
     <a href="{% url 'home_page' %}">HOME</a>
-    <a class="active" href="{% url 'db_insert' %}">INSERT</a>
-    <a href="{% url 'db_query' %}">QUERY</a>
+    <a class="active" href="{% url 'db_insert_page' %}">INSERT</a>
+    <a href="{% url 'db_query_page' %}">QUERY</a>
 </div>
 
 <div id="form_div">
