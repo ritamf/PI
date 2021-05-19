@@ -19,6 +19,7 @@ def datasource_test(self):
     return Response(status=status.HTTP_200_OK)
 
 # 'grafana/search'
+# COLEM ESTE JSON no post_search
 #{ "target": "query field value" }
 
 @api_view(['POST'])
