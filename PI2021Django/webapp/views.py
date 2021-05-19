@@ -19,31 +19,39 @@ def datasource_test(self):
     return Response(status=status.HTTP_200_OK)
 
 # 'grafana/search'
+#{ "target": "query field value" }
+
 @api_view(['POST'])
 def datasource_search(request):
-
     db = DB.DB()
-    user = "Marta"
+    user = "Luis"
 
-    req = json.loads(request.data)
-    target = req["target"]
+    req = request.data
+    check_if_req_contains_type = "type" in req
 
-    if ':' in target:
-        finder, target = target.split(':', 1)
+    if check_if_req_contains_type == True:
+        type_format = req["type"]
+        target = req["target"]
     else:
-        finder = target
+        target = req["target"]
 
-    if not target or finder not in metric_finders:
-        metrics = []
-        if target == '*':
-            metrics += metric_finders.keys() + metric_readers.keys()
-        else:
-            metrics.append(target)
-
-        return json_dump(metrics)
-    else:
-        return json_dump(list(metric_finders[finder](target)))
-
+    sensores = ""
+    sensor_list = db.getSensors(user)
+    wordFormation = ""
+    dropdown = []
+    for sensores in sensor_list:
+        dropdown.append(sensores)
+        sensorAttributes = db.getSensorAttributes(user, sensores)
+        #print(sensorAttributes)
+        attributesList = sensorAttributes[0][2]
+        for attributes in attributesList:
+            
+            if (attributes != "sensorid") and (attributes != "timestamp"):
+                wordFormation = sensores + "." + attributes
+                dropdown.append(wordFormation)
+                print(dropdown)
+    
+    return Response(dropdown)
 
 
 
