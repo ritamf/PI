@@ -67,8 +67,17 @@ button[type=submit]:hover {
 </style>
 <script>
 
-  function insertIntoDB(){
-    var json = document.getElementById("JSON_input").value
+  function callInsert() {
+    var json = JSON.parse(document.getElementById("JSON_input").value)
+
+    for(var i = 0; i < json.length; i++){
+      console.log(json[i])
+      insertIntoDB(JSON.stringify(json[i]))
+    }
+  }
+
+  function insertIntoDB(json){
+    //var json = document.getElementById("JSON_input").value
     var sensorid = document.getElementById("sensorID").value
     var url2 = '/insert_into_db/' + 'admin/' + sensorid
     console.log(json)
@@ -102,10 +111,10 @@ button[type=submit]:hover {
 <div id="form_div">
   <form>
 
-    <label for="sensorID">Sensor ID</label>
+    <label for="sensorID">Sensor ID: </label>
     <input type="text" id="sensorID" name="sensorID" placeholder="Write Sensor ID here..">
 
-    <label for="JSON_input">JSON input</label>
+    <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
 
     <!-- <label for="country">Country</label>
@@ -114,7 +123,7 @@ button[type=submit]:hover {
       <option value="canada">Canada</option>
       <option value="usa">USA</option>
     </select> -->
-    <button type="submit" onclick="insertIntoDB()">Insert</button>
+    <button type="submit" onclick="callInsert()">Insert</button>
   </form>
 </div>
 </body>

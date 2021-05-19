@@ -20,6 +20,16 @@ input[type=text], select {
   box-sizing: border-box;
 }
 
+input[type=date], select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
 button[type=button] {
   width: 100%;
   background-color: #4CAF50;
@@ -71,49 +81,7 @@ button[type=button]:hover {
   color: white;
 }
 </style>
-<script>
 
-//{ "conditions": {"temperature": "=12"}, "attributes": ["temperature"]}
-
-  function queryDB(){
-
-    document.getElementById("result_div").innerHTML = ""
-
-    var result_div = document.getElementById("result_div");
-
-    var conditions = JSON.parse(document.getElementById("conditions").value)
-    var attributes = JSON.parse(document.getElementById("attributes").value)
-    var from_ts = document.getElementById("from_ts").value
-    var to_ts = document.getElementById("to_ts").value
-    var sensor_id = document.getElementById("sensor_id").value
-    console.log(sensor_id)
-    var url2 = '/query_db/' + 'admin/' + sensor_id
-    data_dict = JSON.stringify({ "conditions": conditions, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
-    console.log(typeof data_dict);
-    console.log(data_dict)
-    $.ajax({ 
-    headers: { 
-        'Accept': 'application/json',
-        'Content-Type': 'application/json' 
-    },
-    url: url2,
-    type: 'POST',
-    data: data_dict,
-    success: function(result) {
-      for( const element of result){
-        document.getElementById("result_div").innerHTML += JSON.stringify(element);
-        document.getElementById("result_div").innerHTML += "<br>"
-      }
-      //document.getElementById("result_div").innerHTML = JSON.stringify(result);
-      result_div.style.visibility = "visible";
-      },
-      error: function(result) {
-        console.log('error')
-      }
-  });
-  }
-  
-</script>
 <body>
 
 <!-- Navbar -->
@@ -137,27 +105,151 @@ button[type=button]:hover {
         <option value="all">All</option>
       </select>
 
-      <label for="attributes">Attributes</label>
+      
+    <label for="attributes">Attributes: </label>
+    <label id="labelChanged"></label>
     <input type="text" id="attributes" name="attributes" placeholder='Example: ["temperature"]'>
 
-    <label for="conditions">Conditions</label>
+    
+
+    <label for="conditions">Conditions: </label>
     <input type="text" id="conditions" name="conditions" placeholder='Example: {"temperature": "=12"}'>
 
-    <label for="from_ts">From</label>
-    <input type="text" id="from_ts" name="from_ts" placeholder="Query from this date.." value="None">
+    <!-- <label for="from_ts">From</label>
+    <input type="text" id="from_ts" name="from_ts" placeholder="Query from this date.." value="None"> -->
 
-    <label for="to_ts">To</label>
-    <input type="text" id="to_ts" name="to_ts" placeholder="Query to this date.." value="None">
+    <label for="from_ts">From: </label>
+    <input type="date" id="from_ts" name="from_ts" value="None" min="2019-02-02" max="2021-12-03"> 
+
+    <label for="to_ts">To: </label>
+    <input type="date" id="to_ts" name="to_ts" value="None" min="2019-02-03" max="2021-12-03">
 
 
     <button type="button" onclick="queryDB()">Query</button>
+
+    
   </form>
+  <div id="result_div" style="visibility: hidden;">
+    This is my DIV element.
+  </div>
 </div>
 
-<div id="result_div" style="visibility: hidden;">
-  This is my DIV element.
-</div>
+
   
 </div>
+<script>
+
+  var newLabel = '';
+  $('#sensor_id').on('change', function(){
+
+      sensor_id = document.getElementById("sensor_id").value
+      console.log(sensor_id)
+      if (sensor_id == "all") {
+        return_all_attributes_to_page()
+      }
+      else{
+        return_sensor_attributes_to_page('/get_sensor_attributes/' + 'admin/' + sensor_id);
+      }
+
+  }).trigger('change');
+
+  function return_sensor_attributes_to_page(url_given) {
+    $.ajax({ 
+      headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json' 
+      },
+      url: url_given,
+      type: 'GET',
+      success: function(result) {
+          $('#labelChanged').text(result);
+        },
+        error: function(result) {
+          console.log('error')
+        }
+    });
+  }
+
+  function return_all_attributes_to_page() {
+    $.ajax({ 
+      headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json' 
+      },
+      url: '/get_all_attributes',
+      type: 'GET',
+      success: function(result) {
+          $('#labelChanged').text(result);
+        },
+        error: function(result) {
+          console.log('error')
+        }
+    });
+  }
+  
+  // $('#sensor_id').on('change', function() {
+  
+  //   //var sensors_list = document.getElementById("sensor_id").options;
+  //   var sensors_list = [2,12]
+  //   console.log(sensors_list[0])
+  //   var i;
+  //   var lookup = {};
+  //   for (i = 0; i < sensors_list.length; i++) {
+  //       lookup.sensors_list[i] = get_sensor_attributes('/get_sensor_attributes/' + 'admin/' + sensors_list[i]);
+  //   }
+  //    // Set selected option as variable
+  //    var selectValue = $(this).val();
+  
+  //    // Empty the target field
+  //    $('#choices').empty();
+     
+  //    // For each chocie in the selected option
+  //    for (i = 0; i < lookup[selectValue].length; i++) {
+  //       // Output choice in the target field
+  //       $('#choices').append("<option value='" + lookup[selectValue][i] + "'>" + lookup[selectValue][i] + "</option>");
+  //    }
+  // });
+
+  //{ "conditions": {"temperature": "=12"}, "attributes": ["temperature"]}
+  
+    function queryDB(){
+  
+      document.getElementById("result_div").innerHTML = ""
+  
+      var result_div = document.getElementById("result_div");
+  
+      var conditions = JSON.parse(document.getElementById("conditions").value)
+      var attributes = JSON.parse(document.getElementById("attributes").value)
+      var from_ts = document.getElementById("from_ts").value
+      var to_ts = document.getElementById("to_ts").value
+      var sensor_id = document.getElementById("sensor_id").value
+      console.log(sensor_id)
+      var url2 = '/query_db/' + 'admin/' + sensor_id
+      data_dict = JSON.stringify({ "conditions": conditions, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
+      console.log(typeof data_dict);
+      console.log(data_dict)
+      $.ajax({ 
+      headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json' 
+      },
+      url: url2,
+      type: 'POST',
+      data: data_dict,
+      success: function(result) {
+        for( const element of result){
+          document.getElementById("result_div").innerHTML += JSON.stringify(element);
+          document.getElementById("result_div").innerHTML += "<br>"
+        }
+        //document.getElementById("result_div").innerHTML = JSON.stringify(result);
+        result_div.style.visibility = "visible";
+        },
+        error: function(result) {
+          console.log('error')
+        }
+    });
+    }
+    
+  </script>
 </body>
 </html>

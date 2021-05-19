@@ -24,6 +24,8 @@ urlpatterns = [
     
     path('insert_into_db/<str:user>/<str:sensorid>', views.insert_into_db, name="insert_into_db"),
     path('query_db/<str:user>/<str:sensorid>', views.query_db, name="query_db"),
+    path('get_sensor_attributes/<str:user>/<str:sensorid>', views.get_sensor_attributes, name="get_sensor_attributes"),
+    path('get_all_attributes', views.get_all_attributes, name="get_all_attributes"),
 
     path('grafana/', views.datasource_test, name="datasource_test"),
     path('grafana/search', views.datasource_search, name="datasource_available_search"),

@@ -30,7 +30,7 @@ def insert_into_db(request,user,sensorid):
 
     return Response(readJson)
 
-# '/query_db'
+# '/query_db/<str:user>/<str:sensorid>'
 @api_view(['POST'])
 def query_db(request,user,sensorid):
 
@@ -51,17 +51,18 @@ def query_db(request,user,sensorid):
     if sensorid != "all":
         if attributes is not None:
             if conditions is not None:
-                if from_ts != "None":
+                if from_ts != "None" and from_ts != "":
                     values = db.rangeQueryPerSensor(user, sensorid, attributes, conditions, from_ts, to_ts)
                 else:
+                    print("didnt use ts")
                     values = db.queryPerSensor(user, sensorid, attributes, conditions)
             else:
                 values = db.queryPerSensor(user, sensorid, attributes, {})
     else:
         if attributes is not None:
             if conditions is not None:
-                if from_ts != "None":
-                    values = db.angeQueryPerUser(user, attributes, conditions, from_ts, to_ts)
+                if from_ts != "None" and from_ts != "":
+                    values = db.rangeQueryPerUser(user, attributes, conditions, from_ts, to_ts)
                 else:
                     values = db.queryPerUser(user, attributes, conditions)
             else:
@@ -71,6 +72,36 @@ def query_db(request,user,sensorid):
                     values.append(dic)
 
     return Response(values)
+
+# '/get_sensor_attributes/<str:user>/<str:sensorid>
+@api_view(['GET'])
+def get_sensor_attributes(self,user,sensorid):
+
+    db = DB.DB()
+
+    sensor_attributes = db.getSensorAttributes(user,sensorid)
+
+    attributes = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
+
+    attributes = list(dict.fromkeys(attributes))
+    print(attributes)
+
+    return Response(attributes)
+
+# '/get_all_attributes/<str:user>/
+@api_view(['GET'])
+def get_all_attributes(self):
+
+    db = DB.DB()
+
+    sensor_attributes = db.getAllSensorsAttributes()
+
+    attributes = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
+
+    attributes = list(dict.fromkeys(attributes))
+    print(attributes)
+
+    return Response(attributes)
 
 # '/'
 def home_page(request, *args, **kwargs):
