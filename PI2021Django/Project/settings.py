@@ -41,10 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'webapp',
-
+    'rest_framework.authtoken',
 ]
 
 SESSION_ENGINE = 'django_cassandra_engine.sessions.backends.db'
+#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,6 +60,9 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
     ]
 }
 
@@ -106,7 +111,13 @@ DATABASES = {
                 'default_timeout': 10,
             }
         }
-    }
+    },
+    # 'users': {
+    #     'NAME': 'users',
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'USER': 'mysql_user',
+    #     'PASSWORD': 'priv4te'
+    # }
 }
 
 APPEND_SLASH = True

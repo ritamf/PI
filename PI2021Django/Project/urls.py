@@ -21,6 +21,11 @@ urlpatterns = [
     path('', views.home_page, name="home_page"),
     path('query/', views.db_query_page, name="db_query_page"),
     path('insert/', views.db_insert_page, name="db_insert_page"),
+
+    path('register_user', views.register_user_page, name="register_user_page"),
+    path('authenticate_user', views.authenticate_user_page, name="authenticate_user_page"),
+    path('get_user_current_token/<str:user_email>', views.get_user_current_token_page, name="get_user_current_token_page"),
+
     
     path('insert_into_db/<str:user>/<str:sensorid>', views.insert_into_db, name="insert_into_db"),
     path('query_db/<str:user>/<str:sensorid>', views.query_db, name="query_db"),

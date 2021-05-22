@@ -1,8 +1,12 @@
 import json
+import secrets
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
+
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -11,8 +15,61 @@ from .serializers import sensorsSerializers# ,productsSerializers, attributesSer
 
 from django.core.cache import cache
 
+from .models import Users, TokensTable
+
 from DBoT import DB
 from DBoT import JsonParser
+
+
+
+# user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
+# user.last_name = 'Lennon'
+# #u = User.objects.get(username='john')
+# user = authenticate(username='john', password='secret')
+# user.save()
+
+# {"name":"luis","email":"luis222@ua.pt","password":"vbnvbnvbn"}
+
+# '/register_user
+@api_view(['POST'])
+def register_user_page(request):
+
+    req = request.data
+
+    user_name = req["name"]
+    user_email = req["email"]
+    user_password = req["password"]
+
+    print(user_name)
+    print(user_email)
+    print(user_password)
+
+    sObj = Users.if_not_exists().create(user_email_value=user_email, user_password_value=user_password)
+
+    sObj2 = TokensTable.if_not_exists().create(user_email_value=user_email,user_token_value=secrets.token_urlsafe(32))
+
+    return Response(sObj,sObj2)
+
+# '/authenticate_user
+@api_view(['POST'])
+def authenticate_user_page(request):
+
+    req = request.data
+
+    user_email = req["email"]
+    user_password = req["password"]
+
+    print(user_email)
+    print(user_password)
+
+    userObj = Users.objects.get(user_email_value=user_email)
+
+    if (userObj.user_password_value == user_password):
+        sObj2 = TokensTable.objects(user_email_value=user_email).update(user_token_value=secrets.token_urlsafe(32))
+        #authenticate_user_page.sObjToken = TokensTable.objects.get(user_email_value=user_email).user_token_value
+        return Response('success')
+
+    return Response('password or email invalid')
 
 # '/insert_into_db
 @api_view(['POST'])
@@ -103,6 +160,18 @@ def get_all_attributes(self):
 
     return Response(attributes)
 
+
+# '/get_user_current_token/<str:user_email>
+@api_view(['GET'])
+def get_user_current_token_page(self,user_email):
+
+    sObjToken = TokensTable.objects.get(user_email_value=user_email).user_token_value
+
+    info = {"email": user_email, "token": sObjToken}
+
+    return Response(info)
+    
+
 # '/'
 def home_page(request, *args, **kwargs):
     print(args, kwargs)
@@ -116,6 +185,7 @@ def db_insert_page(request, *args, **kwargs):
     context = {
         'user': 'admin',
         'sensorid': 1,
+        #'user_token': authenticate_user_page.sObjToken,
     }
     
     return render(request, "insert.html", context)
@@ -141,14 +211,17 @@ def db_query_page(request, *args, **kwargs):
 @api_view(['GET'])
 def datasource_test(self):
     content = {'Test connection': 'datasource config page test'}
-    return Response(content, status=status.HTTP_200_OK)
+    #return Response(content, status=status.HTTP_200_OK)
+    return Response(User.objects.get(username='luis'))
 
 # 'grafana/search'
+# COLEM ESTE JSON no post_search
+#{ "target": "query field value" }
 @api_view(['POST'])
 def datasource_search(request):
-    # if request.method == 'POST':
-    #     return Response({"data": request.data})
-    # return Response([{"message": "Hello, world!"}])
+    db = DB.DB()
+    user = "Luis"
+
     req = request.data
     check_if_req_contains_type = "type" in req
 
@@ -158,7 +231,23 @@ def datasource_search(request):
     else:
         target = req["target"]
 
-    return Response(target)
+    sensores = ""
+    sensor_list = db.getSensors(user)
+    wordFormation = ""
+    dropdown = []
+    for sensores in sensor_list:
+        dropdown.append(sensores)
+        sensorAttributes = db.getSensorAttributes(user, sensores)
+        #print(sensorAttributes)
+        attributesList = sensorAttributes[0][2]
+        for attributes in attributesList:
+            
+            if (attributes != "sensorid") and (attributes != "timestamp"):
+                wordFormation = sensores + "." + attributes
+                dropdown.append(wordFormation)
+                print(dropdown)
+    
+    return Response(dropdown)
 
 # 'grafana/query'
 @api_view(['GET'])
