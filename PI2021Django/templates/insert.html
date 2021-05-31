@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>DBoT Insert</title>
 <html lang="en">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,7 +21,7 @@ input[type=text], select {
   box-sizing: border-box;
 }
 
-button[type=submit] {
+#insert[type=submit] {
   width: 100%;
   background-color: #4CAF50;
   color: white;
@@ -31,7 +32,7 @@ button[type=submit] {
   cursor: pointer;
 }
 
-button[type=submit]:hover {
+#insert[type=submit]:hover {
   background-color: #45a049;
 }
 
@@ -42,13 +43,14 @@ button[type=submit]:hover {
 }
 
 .topnav {
+  width:100%;
   overflow: hidden;
   background-color: #333;
 }
 
 .topnav a {
-  float: left;
   color: #f2f2f2;
+  float: left;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -64,6 +66,16 @@ button[type=submit]:hover {
   background-color: #04AA6D;
   color: white;
 }
+
+.wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.topnav a.logout {
+  float:right;
+}
+
 </style>
 <script>
 
@@ -79,7 +91,8 @@ button[type=submit]:hover {
   function insertIntoDB(json){
     //var json = document.getElementById("JSON_input").value
     var sensorid = document.getElementById("sensorID").value
-    var url2 = '/insert_into_db/' + 'admin/' + sensorid
+    var user_token = document.getElementById("user_token").value
+    var url2 = '/insert_into_db/' + user_token + "/" + sensorid
     console.log(json)
     $.ajax({ 
     headers: { 
@@ -97,22 +110,42 @@ button[type=submit]:hover {
       }
   });
   }
+
+  function logout_user() {
+    $.ajax({ 
+    url: '/logout_user',
+    type: 'GET',
+    success: function(result) {
+        console.log('ok')
+      },
+      error: function(result) {
+        console.log('error')
+      }
+  });
+  }
   
 </script>
 <body>
 
 <!-- Navbar -->
-<div class="topnav">
-    <a href="{% url 'home_page' %}">HOME</a>
+<div class="wrap">
+  <div class="topnav">
+    <!-- <a href="{% url 'home_page' %}">HOME</a> -->
     <a class="active" href="{% url 'db_insert_page' %}">INSERT</a>
     <a href="{% url 'db_query_page' %}">QUERY</a>
+    <a class="logout" href="{% url 'logout_page' %}" onclick="logout_user()">LOGOUT</a>
+  </div>
 </div>
+
 
 <div id="form_div">
   <form>
 
     <label for="sensorID">Sensor ID: </label>
     <input type="text" id="sensorID" name="sensorID" placeholder="Write Sensor ID here..">
+
+    <label for="user_token">Your Token: </label>
+    <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
 
     <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
@@ -123,11 +156,9 @@ button[type=submit]:hover {
       <option value="canada">Canada</option>
       <option value="usa">USA</option>
     </select> -->
-    <button type="submit" onclick="callInsert()">Insert</button>
+    <button id="insert" type="submit" onclick="callInsert()">Insert</button>
   </form>
 </div>
-
-{{sObjToken}}
 </body>
 
 </html>

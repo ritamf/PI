@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<title>DBoT Token</title>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+body {font-family: "Lato", sans-serif}
+.mySlides {display: none}
+
+button[type=button] {
+  width: 10%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type=submit]:hover {
+  background-color: #45a049;
+}
+
+.topnav {
+  width:100%;
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+.wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.topnav a.logout {
+  float:right;
+}
+</style>
+<script>
+    function CopyToClipboard(containerid) {
+        if (document.selection) {
+          var range = document.body.createTextRange();
+          range.moveToElementText(document.getElementById(containerid));
+          range.select().createTextRange();
+          document.execCommand("copy");
+        } else if (window.getSelection) {
+          var range = document.createRange();
+          range.selectNode(document.getElementById(containerid));
+          window.getSelection().addRange(range);
+          document.execCommand("copy");
+          alert("Token has been copied")
+        }
+    }       
+</script>
+<body>
+
+<!-- Navbar -->
+<div class="wrap">
+  <div class="topnav">
+    <a href="{% url 'db_insert_page' %}">INSERT</a>
+    <a href="{% url 'db_query_page' %}">QUERY</a>
+    <a class="logout" href="{% url 'logout_page' %}" onclick="logout_user()">LOGOUT</a>
+</div>
+</div>
+
+<br /><br />
+<div style="text-align:center; ">Use this token when inserting or querying: </div>
+<br /><br />
+<div style="text-align:center; ">Do not forget to Logout at the end of your session... </div>
+<br /><br />
+<div style="text-align:center;" id="div1">{{user_token}} </div>
+<br />
+<div style="text-align:center;">
+<button type="button" onclick="CopyToClipboard('div1')">Copy text</button>
+</div>
+</body>
+</html>

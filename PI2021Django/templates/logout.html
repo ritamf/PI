@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<title>DBoT Logout</title>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+body {font-family: "Lato", sans-serif}
+.mySlides {display: none}
+
+input[type=text], select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+#insert[type=submit] {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#insert[type=submit]:hover {
+  background-color: #45a049;
+}
+
+#form_div {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+.topnav {
+  width:100%;
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  color: #f2f2f2;
+  float: left;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+.wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.topnav a.logout {
+  float:right;
+}
+
+</style>
+<body>
+
+<!-- Navbar -->
+<div class="wrap">
+  <div class="topnav">
+    <a href="{% url 'home_page' %}">LOGIN</a>
+  </div>
+</div>
+<br /><br />
+<div style="text-align:center; ">Successfully logged out</div>
+
+</body>
+
+</html>

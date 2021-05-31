@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>DBoT Query</title>
 <html lang="en">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,6 +59,7 @@ button[type=button]:hover {
 }
 
 .topnav {
+  width:100%;
   overflow: hidden;
   background-color: #333;
 }
@@ -80,19 +82,38 @@ button[type=button]:hover {
   background-color: #04AA6D;
   color: white;
 }
+
+.topnav button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.topnav a.logout {
+  float:right;
+}
+
+
 </style>
 
 <body>
 
 <!-- Navbar -->
 <div class="topnav">
-  <a href="{% url 'home_page' %}">HOME</a>
+  <!-- <a href="{% url 'home_page' %}">HOME</a> -->
   <a href="{% url 'db_insert_page' %}">INSERT</a>
   <a class="active" href="{% url 'db_query_page' %}">QUERY</a>
+  <a class="logout" href="{% url 'logout_page' %}" onclick="logout_user()">LOGOUT</a>
 </div>
 
 <div id="form_div">
   <form>
+    <label for="user_token">Your Token: </label>
+    <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
     <!-- <label for="JSON_input">JSON input</label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input.."> -->
       <label>Sensor target</label>
@@ -148,7 +169,7 @@ button[type=button]:hover {
         return_all_attributes_to_page()
       }
       else{
-        return_sensor_attributes_to_page('/get_sensor_attributes/' + 'admin/' + sensor_id);
+        return_sensor_attributes_to_page('/get_sensor_attributes/' + sensor_id);
       }
 
   }).trigger('change');
@@ -217,14 +238,15 @@ button[type=button]:hover {
       document.getElementById("result_div").innerHTML = ""
   
       var result_div = document.getElementById("result_div");
-  
+      
       var conditions = JSON.parse(document.getElementById("conditions").value)
       var attributes = JSON.parse(document.getElementById("attributes").value)
       var from_ts = document.getElementById("from_ts").value
       var to_ts = document.getElementById("to_ts").value
       var sensor_id = document.getElementById("sensor_id").value
+      var user_token = document.getElementById("user_token").value
       console.log(sensor_id)
-      var url2 = '/query_db/' + 'admin/' + sensor_id
+      var url2 = '/query_db/' + user_token + '/' + sensor_id
       data_dict = JSON.stringify({ "conditions": conditions, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
       console.log(typeof data_dict);
       console.log(data_dict)

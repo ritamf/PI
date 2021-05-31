@@ -1,7 +1,9 @@
 <!DOCTYPE html>
+<title>DBoT Login</title>
 <html lang="en">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="#">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -88,8 +90,8 @@ a {
 
 button {
 	border-radius: 20px;
-	border: 1px solid #FF4B2B;
-	background-color: #FF4B2B;
+	border: 1px solid #04AA6D;
+	background-color: #04AA6D;
 	color: #FFFFFF;
 	font-size: 12px;
 	font-weight: bold;
@@ -202,9 +204,9 @@ input {
 }
 
 .overlay {
-	background: #FF416C;
-	background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-	background: linear-gradient(to right, #FF4B2B, #FF416C);
+	background: #04AA6D;
+	background: -webkit-linear-gradient(to right, #198D62, #198d62);
+	background: linear-gradient(to right, #198D62, #0b9965);
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: 0 0;
@@ -295,23 +297,16 @@ footer a {
 </style>
 <body>
 
-<!-- Navbar -->
-<div class="topnav" id="navbarid">
-  <a class="active" href="{% url 'home_page' %}">HOME</a>
-  <a href="{% url 'db_insert_page' %}">INSERT</a>
-  <a href="{% url 'db_query_page' %}">QUERY</a>
-</div>
-
 <div class="container" id="container">
 	<div class="form-container sign-up-container">
 		<form action="#">
 			<h1>Create Account</h1>
 			<div class="social-container">
 			</div>
-			<span>or use your email for registration</span>
 			<input type="text" placeholder="Name" id="signUpName"/>
 			<input type="email" placeholder="Email" id="signUpEmail"/>
 			<input type="password" placeholder="Password" id="signUpPassword"/>
+			<input type="password" placeholder="Confirm Password" id="signUpPasswordConfirm"/>
 			<button id="registerButton">Sign Up</button>
 		</form>
 	</div>
@@ -320,11 +315,10 @@ footer a {
 			<h1>Sign in</h1>
 			<div class="social-container">
 			</div>
-			<span>or use your account</span>
 			<input type="email" placeholder="Email" id="signInEmail"/>
 			<input type="password" placeholder="Password" id="signInPassword"/>
-			<a href="#">Forgot your password?</a>
-			<button id="authenticateButton">Sign In</button>
+			<a href="{% url 'recover_password_page' %}">Forgot your password?</a>
+			<button id="authenticateButton" type="button">Sign In</button>
 		</form>
 	</div>
 	<div class="overlay-container">
@@ -378,12 +372,23 @@ function registerUser() {
   var signUpName = document.getElementById('signUpName').value;
   var signUpEmail = document.getElementById('signUpEmail').value;
   var signUpPassword = document.getElementById('signUpPassword').value;
+  var signUpPasswordConfirm = document.getElementById('signUpPasswordConfirm').value;
 
-  json = JSON.stringify({'name': signUpName, 'email': signUpEmail, 'password': signUpPassword});
+  if (signUpPassword != signUpPasswordConfirm) {
+		alert("Passwords don't match");
+  }
 
-  console.log(json)
+  else if (signUpName == "" | signUpEmail == "" | signUpPassword == "" | signUpPasswordConfirm == ""){
+		alert("One or more fields are empty");
+  }
 
-    $.ajax({ 
+  else {
+
+	json = JSON.stringify({'name': signUpName, 'email': signUpEmail, 'password': signUpPassword});
+
+  	console.log(json)
+
+	$.ajax({ 
     headers: { 
         'Accept': 'application/json',
         'Content-Type': 'application/json' 
@@ -398,6 +403,7 @@ function registerUser() {
         console.log('error')
       }
   });
+  } 
 }
 
 
@@ -417,29 +423,18 @@ function authenticateUser() {
     url: '/authenticate_user',
     type: 'POST',
     data: json,
+	async: false,
+    cache: false,
+    timeout: 100000,
     success: function(result) {
         console.log(result)
-
-        if (result == "success") {
-          $.ajax({ 
-            headers: { 
-                'Accept': 'application/json',
-                'Content-Type': 'application/json' 
-            },
-            url: '/get_user_current_token/' + signInEmail,
-            type: 'GET',
-            success: function(result) {
-                console.log(result)
-              },
-              error: function(result) {
-                console.log('error')
-              }
-        });
-        }
+		if (result != "password or name invalid") {
+			location.href = '/token/' + result
+		}
       },
-      error: function(result) {
+    error: function(result) {
         console.log('error')
-      }
+    }
   });
 }
 </script>
