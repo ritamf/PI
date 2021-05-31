@@ -1,5 +1,7 @@
 import json
 import secrets
+import statistics
+
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
@@ -250,10 +252,94 @@ def datasource_search(request):
     return Response(dropdown)
 
 # 'grafana/query'
-@api_view(['GET'])
-def datasource_query(self):
-    content = {'Test connection': 'datasource config page test'}
-    return Response(content, status=status.HTTP_200_OK)
+@api_view(['POST'])
+def datasource_query(self, request):
+    user = "Marta"  # need to know how we know who is logged in
+    data = json.loads(request.data)
+    db = DB.DB()
+    ti = data['range.from']
+    tf = data['range.to']
+    condicoes = None
+    intervalMs = None
+    maxDataPoints = None
+    if 'adhocFilters' in data:
+        condicoes = {}
+        c = data['adhocFilters']
+        for dic in c:
+            param = dic['key']
+            condic = dic['operator'] + dic['value']
+            condicoes[param] = condic
+    if 'intervalMs' in data:
+        intervalMs = data['intervalMs']
+    if 'maxDataPoints' in data:
+        maxDataPoints = data['maxDataPoints']
+
+
+    tempo = ti - tf
+    tempo_seconds = tempo.total_seconds()
+    tempo_miliseconds = tempo_seconds*1000
+    dif_interval = tempo_miliseconds/maxDataPoints
+
+    if dif_interval > intervalMs:
+        intervalMs = dif_interval
+
+    results = []
+
+    for target in data['targets']:
+
+        req_type = target.get('type', 'timeserie')
+
+        # targets é tudo o que aparece no mesmo dashboard
+        sensor, campo = target['target'].split('.', 1)
+        if sensor is not None and sensor != '':
+            if campo is not None and campo != '':
+                if condicoes is not None and condicoes != '':
+                    values = db.rangeQueryPerSensor(user, sensor, campo, condicoes, ti, tf)
+                else:
+                    values = db.rangeQueryPerSensor(user, sensor, campo, {}, ti, tf)
+        else:
+            if campo is not None and campo != '':
+                if condicoes is not None and condicoes != '':
+                    values = db.rangeQueryPerUser(user, campo, condicoes, ti, tf)
+                else:
+                    values = db.rangeQueryPerUser(user, campo, {}, ti, tf)
+
+        if req_type == 'table':
+            results.extend(dataframe_to_json_table(target, values))
+        else:
+            results.extend(dataframe_to_response(target, values, intervalMs))
+
+    return Response(results, status=status.HTTP_200_OK)
+
+
+def dataframe_to_json_table(target, results):
+    return None
+
+
+def dataframe_to_response(target, results, freq, ti, tf):
+
+    points = (tf - ti)/freq
+    listofValues = []
+    temporaryList = []
+    sensor, campo = target['target'].split('.', 1)
+    for dic in results:
+        tfinal = ti + freq
+        for p in range(points):
+            while dic['timestamp'] in [ti, tfinal]:
+                if tfinal > tf:
+                    break
+                point = [dic[campo], dic['timestamp']]
+                temporaryList.append(point)
+                point = statistics.mean(listofValues)
+                listofValues.append(point)
+                temporaryList = []
+            ti = ti + freq
+            tfinal = tfinal + freq
+
+
+
+    response = {'target': target[target], 'datapoints': listofValues}
+    return response
 
 # 'grafana/annotations'
 @api_view(['GET'])
