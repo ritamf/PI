@@ -373,8 +373,12 @@ def datasource_search(request):
     sensor_list = DB.getSensors(sessCache)
     wordFormation = ""
     dropdown = []
+    dropdownUnique = []
     for sensores in sensor_list:
-        dropdown.append(sensores + ".")
+        wordFormation = sensores + "."
+        dropdown.append(wordFormation)
+        if wordFormation not in dropdownUnique:
+            dropdownUnique.append(wordFormation)
         sensorAttributes = DB.getSensorAttributes(sessCache, sensores)
         #print(sensorAttributes)
         attributesList = sensorAttributes[0][2]
@@ -383,20 +387,33 @@ def datasource_search(request):
             if (attributes != "sensorid") and (attributes != "timestamp"):
                 wordFormation = sensores + "." + attributes
                 dropdown.append(wordFormation)
+                if wordFormation not in dropdownUnique:
+                    dropdownUnique.append(wordFormation)
+                
                 if attributes not in dropdown:
-                    dropdown.append("." + attributes)
+                    wordFormation = "." + attributes
+                    dropdown.append(wordFormation)
+                    if wordFormation not in dropdownUnique:
+                        dropdownUnique.append(wordFormation)
+                    
                     
     
     #return Response(np.array(dropdown))
-    return Response(dropdown)
+    return Response(dropdownUnique)
     
 # 'grafana/query'
 @api_view(['POST'])
 def datasource_query(request):
+    print("yo")
+    print(request.body)
+
     sessCache = cache.get('cfe0')
     data = request.data
     ti = data['range']['from']
     tf = data['range']['to']
+
+    target = data["targets"][0]
+
     condicoes = None
     intervalMs = None
     maxDataPoints = None
@@ -412,12 +429,13 @@ def datasource_query(request):
     if 'maxDataPoints' in data:
         maxDataPoints = data['maxDataPoints']
 
-    #ti = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
-    #tf = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
-    ti_ts = datetime.strptime(ti,"%Y-%m-%d %H:%M:%S")
-    tf_ts = datetime.strptime(tf,"%Y-%m-%d %H:%M:%S")
+    ti_ts = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
+    tf_ts = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
+    # ti_ts = datetime.strptime(ti,"%Y-%m-%d %H:%M:%S")
+    # tf_ts = datetime.strptime(tf,"%Y-%m-%d %H:%M:%S")
     tempo = ti_ts - tf_ts
     tempo_seconds = tempo.total_seconds()
+
     tempo_miliseconds = tempo_seconds*1000
     dif_interval = tempo_miliseconds/maxDataPoints
 
@@ -426,39 +444,36 @@ def datasource_query(request):
 
     results = []
 
-    for target in data['targets']:
+    req_type = target.get('type', 'timeserie')
+    # targets Ã© tudo o que aparece no mesmo dashboard
+    sensor, campo = target['target'].split('.', 1)
 
-        req_type = target.get('type', 'timeserie')
-        # targets é tudo o que aparece no mesmo dashboard
-        sensor, campo = target['target'].split('.', 1)
+    if campo is None or campo == '':
+        sensorAttributes = DB.getSensorAttributes(sessCache, sensor)
+        campo = sensorAttributes[0][2]
+    else:
+        campo = [campo]
+    if sensor is not None and sensor != '':
+        if campo is not None and campo != '':
+            if condicoes is not None and condicoes != '':
+                values = DB.rangeQueryPerSensor(sessCache, sensor, campo, condicoes, ti, tf)
+            else:
+                values = DB.rangeQueryPerSensor(sessCache, sensor, campo, {}, ti, tf)
+    else:
+        if campo is not None and campo != '':
+            if condicoes is not None and condicoes != '':
+                values = DB.rangeQueryPerUser(sessCache, campo, condicoes, ti, tf)
+            else:
+                values = DB.rangeQueryPerUser(sessCache, campo, {}, ti, tf)
 
-        if campo is None or campo == '':
-            sensorAttributes = DB.getSensorAttributes(sessCache, sensor)
-            campo = sensorAttributes[0][2]
-        else:
-            campo = [campo]
-        if sensor is not None and sensor != '':
-            if campo is not None and campo != '':
-                if condicoes is not None and condicoes != '':
-                    values = DB.rangeQueryPerSensor(sessCache, sensor, campo, condicoes, ti, tf)
-                else:
-                    values = DB.rangeQueryPerSensor(sessCache, sensor, campo, {}, ti, tf)
-        else:
-            if campo is not None and campo != '':
-                if condicoes is not None and condicoes != '':
-                    values = DB.rangeQueryPerUser(sessCache, campo, condicoes, ti, tf)
-                else:
-                    values = DB.rangeQueryPerUser(sessCache, campo, {}, ti, tf)
+    values_sorted = sorted(values, key=itemgetter('timestamp'))
 
-        values_sorted = sorted(values, key=itemgetter('timestamp'))
-
-        if req_type == 'table':
-            results.append(dataframe_to_json_table(target, values_sorted, intervalMs, ti_ts, tf_ts))
-        else:
-            results.append(dataframe_to_response(target, values_sorted, intervalMs, ti_ts, tf_ts))
-
+    if req_type == 'table':
+        results = dataframe_to_json_table(target, values_sorted, intervalMs, ti_ts, tf_ts)
+    else:
+        results = dataframe_to_response(target, values_sorted, intervalMs, ti_ts, tf_ts)
+    print(values)
     return Response(results, status=status.HTTP_200_OK)
-
 
 def dataframe_to_json_table(target, results, freq, ti, tf):
 
@@ -502,59 +517,43 @@ def dataframe_to_json_table(target, results, freq, ti, tf):
 
 
 def dataframe_to_response(target, results, freq, ti, tf):
-    
     response = []
-
-    tinicial = results[0]['timestamp']
-    tinicial = datetime.strptime(tinicial,"%Y-%m-%d %H:%M:%S")
     campos = results[0].copy()
     campos.pop("timestamp")
     array_campo = campos.keys()
 
     tempo = (tf - ti)
     tempo_seconds = tempo.total_seconds()
-    tempo_miliseconds = tempo_seconds*1000
+    tempo_miliseconds = tempo_seconds * 1000
     points = int(tempo_miliseconds / freq)
+    point = ti
 
-    for c in array_campo:
+    for attribute in array_campo:
+        response.append({"target":attribute , "datapoints" : []})
 
-        listofValues = []
-        temporaryList = []
-
-        for p in range(points):
-
-            point = []
-            tfinal = tinicial + timedelta(seconds=freq/1000)
-
-            while results is not None:
-                for dic in results:
-                    timestamp = datetime.strptime(dic['timestamp'],"%Y-%m-%d %H:%M:%S")
-                    print(timestamp)
-                    print(tinicial)
-                    print(tfinal)
-                    print("yo")
-                    if timestamp in [tinicial, tfinal]:
-                            print(dic[c])
-                            temporaryList.append(dic[c])
-                            print(temporaryList)
-                            results.remove(dic)                   
-                    point.append(statistics.mean(temporaryList))
-                    print(point)
-                    temporaryList = []
-                listofValues.append(point)
-            
-            print(temporaryList)
-            value = statistics.mean(temporaryList)
-            point = [value, tfinal]
-            listofValues.append(point)
-            temporaryList = []
-
-            if tfinal > tf:
-                break
-            tinicial = tinicial + freq
-
-        response.append({'target': target[target], 'datapoints': listofValues})
-
+    while point < tf:
+        i = 0
+        for attribute in array_campo:
+            point_attribute_values = []
+            for dic in results:
+                timestamp = dic['timestamp']
+                ts = datetime.strptime(timestamp,"%Y-%m-%d %H:%M:%S")
+                if ts <= point + timedelta(seconds=freq / 1000) and ts>= point:
+                    point_attribute_values.append(dic[attribute])
+                else:
+                    break
+            if len(point_attribute_values) > 0:
+                point_attribute_average = sum(point_attribute_values) / len(point_attribute_values)
+            else:
+                point_attribute_average = 0
+            response[i]['datapoints'].append(point_attribute_average)
+            i = i+1
+        # print('point')
+        # print(point)
+        # print('tf')
+        # print(tf)
+        point = point + timedelta(seconds=freq / 1000)
+        
     return response
 
 # 'grafana/annotations'
