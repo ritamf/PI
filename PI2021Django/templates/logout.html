@@ -85,9 +85,34 @@ input[type=text], select {
     <a href="{% url 'home_page' %}">LOGIN</a>
   </div>
 </div>
-<br /><br />
-<div style="text-align:center; ">Successfully logged out</div>
 
+<div id="form_div">
+  <form>
+  <label for="user_token">Your Token: </label>
+  <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
+  <button id="insert" type="submit" onclick="callLogout()">Logout</button>
+</form>
+</div>
 </body>
-
+<script>
+  function callLogout(){
+    var user_token = document.getElementById("user_token").value
+    var url2 = '/logout_user/' + user_token
+    console.log(url2)
+    $.ajax({ 
+    headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' 
+    },
+    url: url2,
+    type: 'GET',
+    success: function(result) {
+        console.log('ok')
+      },
+      error: function(result) {
+        console.log('error')
+      }
+  });
+  }
+</script>
 </html>

@@ -6,6 +6,11 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from django.core.mail import send_mail
+import requests
+from datetime import datetime, timedelta
+import statistics
+from operator import itemgetter
+import traceback
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -18,7 +23,7 @@ from .serializers import sensorsSerializers# ,productsSerializers, attributesSer
 
 from django.core.cache import cache
 
-from .models import TokensTable, Users
+from .models import TokensTable, TokensTable_secondary, Users
 
 from DBoT import DB, Cache
 from DBoT import JsonParser
@@ -37,15 +42,12 @@ def register_user_page(request):
     user_email = req["email"]
     user_password = req["password"]
 
-    print(user_name)
-    print(user_email)
-    print(user_password)
-
     try:
         h = hashlib.new('sha512_256')
         h.update(user_password.encode('utf-8'))
-        #h.hexdigest()
-        sObj = Users.if_not_exists().create(user_name_value=user_name, user_email_value=user_email,user_password_value=h.hexdigest())
+        h2 = hashlib.new('sha512_256')
+        h2.update(user_email.encode('utf-8'))
+        Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
     except:
         return Response("user already exists")
 
@@ -53,14 +55,21 @@ def register_user_page(request):
 
     return Response("success")
 
-# '/logout_user
+# '/logout_user/<str:token>'
 @api_view(['GET'])
-def logout_user_page(request):
+def logout_user_page(request,user_token):
 
-    res = TokensTable.objects.get(user_name_value=request.session.get('username'))
+    h = hashlib.new('sha512_256')
+
+    h.update(user_token.encode('utf-8'))
+
+    h_hexdigest = h.hexdigest()
+
+    res = TokensTable.objects.get(user_token_value=h_hexdigest)
+    res2 = TokensTable_secondary.objects.get(user_email_value=res.user_email_value)
+    res2.delete()
+
     res.delete()
-
-    request.session.flush()
 
     return Response("successfully logged out")
 
@@ -75,12 +84,17 @@ def authenticate_user_page(request):
 
     h = hashlib.new('sha512_256')
     h.update(user_password.encode('utf-8'))
+
+    h2 = hashlib.new('sha512_256')
+    h2.update(user_email.encode('utf-8'))
+
+    h2_hexdigest = h2.hexdigest()
     
-    userObj = Users.objects.get(user_email_value=user_email)
+    userObj = Users.objects.get(user_email_value=h2_hexdigest)
 
     if (userObj.user_password_value == h.hexdigest()):
         
-        user_name = Users.objects.get(user_email_value=user_email).user_name_value
+        user_name = Users.objects.get(user_email_value=h2_hexdigest).user_name_value
         user_session = DB.sessionLogin(user_name,h.hexdigest())
         cache.add(user_session[0],user_session[1])
         
@@ -88,21 +102,25 @@ def authenticate_user_page(request):
 
         session_token = secrets.token_urlsafe(32) # token to use during session
 
-        h = hashlib.new('sha512_256')
+        h2 = hashlib.new('sha512_256')
 
-        h.update(session_token.encode('utf-8'))
-        
-        TokensTable.create(user_name_value=user_name, user_token_value=h.hexdigest())
-       
-        #request.session['token'] = session_token
-        request.session['username'] = user_name
-        request.session['usermail'] = user_email
-        #request.session['token'].set_expiry(0)
+        h2.update(session_token.encode('utf-8'))
+
+        h3 = hashlib.new('sha512_256')
+
+        h3.update(user_email.encode('utf-8'))
+
+        try: 
+            user_token_outdated = TokensTable_secondary.objects.get(user_email_value=h3.hexdigest()).user_token_value
+            TokensTable.objects.get(user_token_value=user_token_outdated).delete()
+            TokensTable.create(user_email_value=h3.hexdigest(), user_token_value=h2.hexdigest())
+            TokensTable_secondary.objects.get(user_email_value=h3.hexdigest()).update(user_token_value=h2.hexdigest())
+        except:
+            TokensTable.create(user_email_value=h3.hexdigest(), user_token_value=h2.hexdigest())
+            TokensTable_secondary.create(user_email_value=h3.hexdigest(), user_token_value=h2.hexdigest())
 
         return Response(session_token)
-
     
-
     return Response('password or name invalid')
 
 # '/insert_into_db
@@ -117,31 +135,24 @@ def insert_into_db(request,user_token,sensorid):
 
     readJson = jsonParserInit.flat_json(req)
 
-    sessCache = cache.get(request.session.get('username'))
+    h2 = hashlib.new('sha512_256')
 
+    h2.update(user_token.encode('utf-8'))
+
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+
+    sessCache = cache.get(user_name)
+
+    #novo
     if sessCache is None:
-        print(request.session.get('username'))
-        print(Users.objects.get(user_email_value=request.session.get('usermail')).user_password_value)
-        user_session = DB.sessionLogin(request.session.get('username'),Users.objects.get(user_email_value=request.session.get('usermail')).user_password_value)
+        user_session = DB.sessionLogin(user_name,user_password)
         cache.add(user_session[0],user_session[1])
-        sessCache = cache.get(request.session.get('username'))
-
-    h = hashlib.new('sha512_256')
-
-    h.update(user_token.encode('utf-8'))
+        sessCache = cache.get(user_name)
     
-    #if user_token == request.session.get('token'):
-    if h.hexdigest() == TokensTable.objects.get(user_name_value=request.session.get('username')).user_token_value:
-        DB.insertIntoSensor(sessCache,readJson, sensorid)
+    DB.insertIntoSensor(sessCache,readJson, sensorid)
     
-    else:
-        print("yoyo")
-        return Response("invalid token")
-    
-    # if sessCache == None:
-    #     user_name = Users.objects.get(user_name_value=user_name).user_name_value
-    #     user_session = DB.sessionLogin(user_name,token)
-    #     cache.add(user_session[0],user_session[1])
     return Response(readJson)
 
 # '/query_db/<str:sensorid>'
@@ -152,7 +163,23 @@ def query_db(request,user_token,sensorid):
 
     req = request.data
 
-    sessCache = cache.get(request.session.get('username'))
+    h2 = hashlib.new('sha512_256')
+
+    h2.update(user_token.encode('utf-8'))
+
+    h2_hexdigest = h2.hexdigest()
+
+    user_email = TokensTable.objects.get(user_token_value=h2_hexdigest).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+
+    sessCache = cache.get(user_name)
+
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
+        sessCache = cache.get(user_name)
 
     conditions = req["conditions"]
 
@@ -161,12 +188,7 @@ def query_db(request,user_token,sensorid):
     from_ts = req["from_ts"]
     to_ts = req["to_ts"]
 
-    h = hashlib.new('sha512_256')
-
-    h.update(user_token.encode('utf-8'))
-    
-    #if user_token == request.session.get('token'):
-    if h.hexdigest() == TokensTable.objects.get(user_name_value=request.session.get('username')).user_token_value:
+    if h2_hexdigest == TokensTable.objects.get(user_email_value=user_email).user_token_value:
 
         if sensorid != "all":
             if attributes is not None:
@@ -215,53 +237,55 @@ def password_reset_request(request):
 	    'protocol': 'http',
 	    }
 	    html_content = htmltemp.render(c)
-
 	    send_mail(subject, html_content, 'Website <lvalentim@ua.pt>', [input_email], fail_silently=False)
 
 
     return Response("success")
 
-# '/get_sensor_attributes/<str:sensorid>
+# '/get_all_attributes/<str:user_token>
 @api_view(['GET'])
-def get_sensor_attributes(request,sensorid):
+def get_all_attributes(request,user_token):
 
-    sessCache = cache.get(request.session.get('username'))
+    h2 = hashlib.new('sha512_256')
 
-    sensor_attributes = DB.getSensorAttributes(sessCache,sensorid)
+    h2.update(user_token.encode('utf-8'))
 
-    attributes = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
 
-    attributes = list(dict.fromkeys(attributes))
-    print(attributes)
+    sessCache = cache.get(user_name)
 
-    return Response(attributes)
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
+        sessCache = cache.get(user_name)
 
-# '/get_all_attributes/
-@api_view(['GET'])
-def get_all_attributes(request):
+    #get all attributes
+    all_attributes = DB.getAllSensorsAttributes(sessCache)
 
-    sessCache = cache.get(request.session.get('username'))
+    all_attributes_2 = [attribute for attributeList in all_attributes for attribute in attributeList[2] ]
 
-    sensor_attributes = DB.getAllSensorsAttributes(sessCache)
+    all_attributes_2 = list(dict.fromkeys(all_attributes_2))
 
-    attributes = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
+    attributes_dict = {"All": all_attributes_2}
 
-    attributes = list(dict.fromkeys(attributes))
-    print(attributes)
+    #for each sensor, get attributes
 
-    return Response(attributes)
+    sensors_list = DB.getSensors(sessCache)
 
+    for sensorid in sensors_list:
 
-# '/get_user_current_token/<str:user_email>
-@api_view(['GET'])
-def get_user_current_token_page(self,user_email):
+        sensor_attributes = DB.getSensorAttributes(sessCache,sensorid)
 
-    sObjToken = TokensTable.objects.get(user_email_value=user_email).user_token_value
+        sensor_attributes_2 = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
 
-    info = {"email": user_email, "token": sObjToken}
+        sensor_attributes_2 = list(dict.fromkeys(sensor_attributes_2))
 
-    return Response(info)
+        attributes_dict[sensorid] = sensor_attributes_2
     
+    return Response(attributes_dict)
 
 # '/'
 def home_page(request, *args, **kwargs):
@@ -283,24 +307,8 @@ def db_insert_page(request, *args, **kwargs):
 # '/query'
 def db_query_page(request, *args, **kwargs):
     print(args, kwargs)
-
-    sessCache = cache.get(request.session.get('username'))
-
-    if sessCache is None:
-        print(request.session.get('username'))
-        print(Users.objects.get(user_email_value=request.session.get('usermail')).user_password_value)
-        user_session = DB.sessionLogin(request.session.get('username'),Users.objects.get(user_email_value=request.session.get('usermail')).user_password_value)
-        cache.add(user_session[0],user_session[1])
-        sessCache = cache.get(request.session.get('username'))
-
-    sensors_list = DB.getSensors(sessCache)
-
-    context = {
-        'user': 'admin',
-        'sensors': sensors_list,
-    }
     
-    return render(request, "query.html", context)
+    return render(request, "query.html", {})
 
 # '/token/<str:token>'
 def db_token_page(request, token):
@@ -326,140 +334,226 @@ def recover_password_page(request, *args, **kwargs):
     
     return render(request, "recover_password.html", {})
 
-
-# 'grafana/'
+# '<str:user_token>/grafana'
 @api_view(['GET'])
-def datasource_test(self):
+def datasource_test(self,user_token):
     return Response(status.HTTP_200_OK)
 
-# 'grafana/search'
+# '<str:user_token>/grafana/search'
 #{ "target": "query field value" }
 @api_view(['POST'])
-def datasource_search(request):
+def datasource_search(request,user_token):
 
-    sessCache = cache.get(request.session.get('username'))
+    h2 = hashlib.new('sha512_256')
 
-    req = request.data
-    check_if_req_contains_type = "type" in req
+    h2.update(user_token.encode('utf-8'))
 
-    if check_if_req_contains_type == True:
-        type_format = req["type"]
-        target = req["target"]
-    else:
-        target = req["target"]
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+
+    sessCache = cache.get(user_name)
+
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
+        sessCache = cache.get(user_name)
 
     sensores = ""
     sensor_list = DB.getSensors(sessCache)
     wordFormation = ""
     dropdown = []
+    dropdownUnique = []
     for sensores in sensor_list:
-        dropdown.append(sensores)
         sensorAttributes = DB.getSensorAttributes(sessCache, sensores)
-        #print(sensorAttributes)
-        attributesList = sensorAttributes[0][2]
-        for attributes in attributesList:
-            
-            if (attributes != "sensorid") and (attributes != "timestamp"):
-                wordFormation = sensores + "." + attributes
-                dropdown.append(wordFormation)
-                if attributes not in dropdown:
-                    dropdown.append(attributes)
+        for form in sensorAttributes:
+            attributesList = form[2]
+            for attributes in attributesList:
+                if (attributes != "sensorid") and (attributes != "timestamp"):
+                    wordFormation = sensores + "." + attributes
+                    dropdown.append(wordFormation)
+                    if wordFormation not in dropdownUnique:
+                        dropdownUnique.append(wordFormation)
+    return Response(dropdownUnique)
     
-    #return Response(np.array(dropdown))
-    return Response(dropdown)
-    
-# 'grafana/query'
+# '<str:user_token>/grafana/query'
 @api_view(['POST'])
-def datasource_query(self, request):
-    user = "Marta"  # need to know how we know who is logged in
-    data = json.loads(request.data)
-    db = DB.DB()
-    ti = data['range.from']
-    tf = data['range.to']
-    condicoes = None
-    intervalMs = None
-    maxDataPoints = None
-    if 'adhocFilters' in data:
-        condicoes = {}
-        c = data['adhocFilters']
-        for dic in c:
-            param = dic['key']
-            condic = dic['operator'] + dic['value']
-            condicoes[param] = condic
-    if 'intervalMs' in data:
-        intervalMs = data['intervalMs']
-    if 'maxDataPoints' in data:
-        maxDataPoints = data['maxDataPoints']
+def datasource_query(request,user_token):
+    try:
+        h2 = hashlib.new('sha512_256')
 
+        h2.update(user_token.encode('utf-8'))
 
-    tempo = ti - tf
-    tempo_seconds = tempo.total_seconds()
-    tempo_miliseconds = tempo_seconds*1000
-    dif_interval = tempo_miliseconds/maxDataPoints
+        user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+        user_name = Users.objects.get(user_email_value=user_email).user_name_value
+        user_password = Users.objects.get(user_email_value=user_email).user_password_value
 
-    if dif_interval > intervalMs:
-        intervalMs = dif_interval
+        sessCache = cache.get(user_name)
+        data = request.data
+        ti = data['range']['from']
+        tf = data['range']['to']
 
-    results = []
+        target = data["targets"][0]
 
-    for target in data['targets']:
+        condicoes = None
+        intervalMs = None
+        maxDataPoints = None
+        if 'adhocFilters' in data:
+            condicoes = {}
+            c = data['adhocFilters']
+            for dic in c:
+                param = dic['key']
+                condic = dic['operator'] + dic['value']
+                condicoes[param] = condic
+        if 'intervalMs' in data:
+            intervalMs = data['intervalMs']
+        if 'maxDataPoints' in data:
+            maxDataPoints = data['maxDataPoints']
+
+        ti_ts = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
+        tf_ts = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
+        # ti_ts = datetime.strptime(ti,"%Y-%m-%d %H:%M:%S")
+        # tf_ts = datetime.strptime(tf,"%Y-%m-%d %H:%M:%S")
+        tempo = ti_ts - tf_ts
+        tempo_seconds = tempo.total_seconds()
+
+        tempo_miliseconds = tempo_seconds*1000
+        dif_interval = tempo_miliseconds/maxDataPoints
+
+        if dif_interval > intervalMs:
+            intervalMs = dif_interval
+
+        results = []
 
         req_type = target.get('type', 'timeserie')
-
-        # targets é tudo o que aparece no mesmo dashboard
+        # targets Ã© tudo o que aparece no mesmo dashboard
         sensor, campo = target['target'].split('.', 1)
+
+        if campo is None or campo == '':
+            sensorAttributes = DB.getSensorAttributes(sessCache, sensor)
+            campo = sensorAttributes[0][2]
+        else:
+            campo = [campo]
         if sensor is not None and sensor != '':
             if campo is not None and campo != '':
-                if condicoes is not None and condicoes != '':
-                    values = db.rangeQueryPerSensor(user, sensor, campo, condicoes, ti, tf)
-                else:
-                    values = db.rangeQueryPerSensor(user, sensor, campo, {}, ti, tf)
+                if condicoes is not None:
+                    values = DB.rangeQueryPerSensor(sessCache, sensor, campo, condicoes, ti, tf)
         else:
             if campo is not None and campo != '':
-                if condicoes is not None and condicoes != '':
-                    values = db.rangeQueryPerUser(user, campo, condicoes, ti, tf)
-                else:
-                    values = db.rangeQueryPerUser(user, campo, {}, ti, tf)
+                if condicoes is not None:
+                    print("rangeQueryPerUser")
+                    values = DB.rangeQueryPerUser(sessCache, campo, condicoes, ti, tf)
+
+        values_sorted = sorted(values, key=itemgetter('timestamp'))
 
         if req_type == 'table':
-            results.extend(dataframe_to_json_table(target, values))
+            results = dataframe_to_json_table(target, values_sorted, intervalMs, ti_ts, tf_ts)
         else:
-            results.extend(dataframe_to_response(target, values, intervalMs))
+            results = dataframe_to_response(target, values_sorted, intervalMs, ti_ts, tf_ts)
+    
+        return Response(results, status=status.HTTP_200_OK)
+    except Exception as e:
+        tb = traceback.format_exc()
+        return Response(str(e) + " " + tb, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    return Response(results, status=status.HTTP_200_OK)
+def dataframe_to_json_table(target, results, freq, ti, tf):
 
+    dic_response = {"columns": [], "rows": [], "type": "table"}
+    tinicial = results[0]['timestamp']
+    tinicial = datetime.strptime(tinicial,"%Y-%m-%d %H:%M:%S")
+    listofValues = []
+    temporaryList = []
 
-def dataframe_to_json_table(target, results):
-    return None
+    tempo = (tf - ti)
+    tempo_seconds = tempo.total_seconds()
+    tempo_miliseconds = tempo_seconds*1000
+    points = tempo_miliseconds / freq
+
+    print(points)
+
+    array_campo = results[0].keys()
+
+    for p in range(points):
+        
+        point = []
+        tfinal = tinicial + freq
+
+        for c in array_campo:
+            dic_response['columns'].append({'type': 'string', 'Text': c})
+
+            for dic in results:
+                while dic['timestamp'] in [tinicial, tfinal]:
+                    temporaryList.append(dic[c])
+            point.append(statistics.mean(temporaryList))
+            temporaryList = []
+
+        listofValues.append(point)
+        if tfinal > tf:
+            break
+        tinicial = tinicial + freq
+
+    response = [dic_response]
+
+    return response
 
 
 def dataframe_to_response(target, results, freq, ti, tf):
 
-    points = (tf - ti)/freq
-    listofValues = []
-    temporaryList = []
-    sensor, campo = target['target'].split('.', 1)
-    for dic in results:
-        tfinal = ti + freq
-        for p in range(points):
-            while dic['timestamp'] in [ti, tfinal]:
-                if tfinal > tf:
+    response = []
+
+    if len(results) > 0:
+        campos = list(results[0].keys())
+        campos.remove("timestamp")
+    else:
+        campos = []
+
+    # ti = ti.strftime("%Y-%m-%dT%H:%M:%S.%fZ") # passa para string no formato que queremos
+    # tf = tf.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # ti = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
+    # tf = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
+
+    point = ti
+
+    for attribute in campos:
+        response.append({"target":attribute , "datapoints" : []})
+
+    point_counter = 0
+
+    while point < tf:
+        i = 0
+        for attribute in campos:
+            point_attribute_values = []
+            for dic in results:
+                timestamp = dic['timestamp']
+                ts = datetime.strptime(timestamp,"%Y-%m-%d %H:%M:%S")
+                if ts <= point + timedelta(seconds=freq / 1000) and ts>= point:
+                    point_attribute_values.append(dic[attribute])
+                else:
                     break
-                point = [dic[campo], dic['timestamp']]
-                temporaryList.append(point)
-                point = statistics.mean(listofValues)
-                listofValues.append(point)
-                temporaryList = []
-            ti = ti + freq
-            tfinal = tfinal + freq
+            if len(point_attribute_values) > 0:
+                point_attribute_average = sum(point_attribute_values) / len(point_attribute_values)
+            else:
+                point_attribute_average = 0
+            
+            response[i]['datapoints'].append([])
+            response[i]['datapoints'][point_counter].append(point_attribute_average)
+            response[i]['datapoints'][point_counter].append(to_epoch(point.strftime("%Y-%m-%dT%H:%M:%S.%fZ")))
+            
+            i = i+1
+        point = point + timedelta(seconds=freq / 1000)
+        point_counter += 1
 
-
-
-    response = {'target': target[target], 'datapoints': listofValues}
     return response
 
-# 'grafana/annotations'
+# https://oznetnerd.com/2018/04/17/writing-a-grafana-backend-using-the-simple-json-datasource-flask/
+def to_epoch(dt_format):
+    epoch = int((datetime.strptime(dt_format, "%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970, 1, 1)).total_seconds()) * 1000
+    return epoch
+
+# '<str:user_token>/grafana/annotations'
 @api_view(['GET'])
-def datasource_annotations(self):
+def datasource_annotations(self,user_token):
     content = {'Test connection': 'datasource config page test'}
     return Response(content, status=status.HTTP_200_OK)

@@ -21,6 +21,10 @@ input[type=text], select {
   box-sizing: border-box;
 }
 
+#user_token {
+  width: 85%;
+}
+
 input[type=date], select {
   width: 100%;
   padding: 12px 20px;
@@ -31,7 +35,19 @@ input[type=date], select {
   box-sizing: border-box;
 }
 
-button[type=button] {
+#loadAttributes {
+  float: right;
+  width: 10%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#query {
   width: 100%;
   background-color: #4CAF50;
   color: white;
@@ -113,7 +129,11 @@ button[type=button]:hover {
 <div id="form_div">
   <form>
     <label for="user_token">Your Token: </label>
-    <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
+    <div>
+      <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
+      <button type="button" id="loadAttributes" onclick="load_Attributes()">Load Attributes</button>
+    </div>
+    
     <!-- <label for="JSON_input">JSON input</label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input.."> -->
       <label>Sensor target</label>
@@ -146,7 +166,7 @@ button[type=button]:hover {
     <input type="date" id="to_ts" name="to_ts" value="None" min="2019-02-03" max="2021-12-03">
 
 
-    <button type="button" onclick="queryDB()">Query</button>
+    <button id="query" type="button" onclick="queryDB()">Query</button>
 
     
   </form>
@@ -160,79 +180,21 @@ button[type=button]:hover {
 </div>
 <script>
 
-  var newLabel = '';
-  $('#sensor_id').on('change', function(){
+    var newLabel = '';
+    $('#sensor_id').on('change', function(){
 
       sensor_id = document.getElementById("sensor_id").value
+
       console.log(sensor_id)
-      if (sensor_id == "all") {
-        return_all_attributes_to_page()
-      }
-      else{
-        return_sensor_attributes_to_page('/get_sensor_attributes/' + sensor_id);
-      }
 
-  }).trigger('change');
+      console.log(window.value)
 
-  function return_sensor_attributes_to_page(url_given) {
-    $.ajax({ 
-      headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json' 
-      },
-      url: url_given,
-      type: 'GET',
-      success: function(result) {
-          $('#labelChanged').text(result);
-        },
-        error: function(result) {
-          console.log('error')
-        }
-    });
-  }
+      attributes_dict = window.value
 
-  function return_all_attributes_to_page() {
-    $.ajax({ 
-      headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json' 
-      },
-      url: '/get_all_attributes',
-      type: 'GET',
-      success: function(result) {
-          $('#labelChanged').text(result);
-        },
-        error: function(result) {
-          console.log('error')
-        }
-    });
-  }
-  
-  // $('#sensor_id').on('change', function() {
-  
-  //   //var sensors_list = document.getElementById("sensor_id").options;
-  //   var sensors_list = [2,12]
-  //   console.log(sensors_list[0])
-  //   var i;
-  //   var lookup = {};
-  //   for (i = 0; i < sensors_list.length; i++) {
-  //       lookup.sensors_list[i] = get_sensor_attributes('/get_sensor_attributes/' + 'admin/' + sensors_list[i]);
-  //   }
-  //    // Set selected option as variable
-  //    var selectValue = $(this).val();
-  
-  //    // Empty the target field
-  //    $('#choices').empty();
-     
-  //    // For each chocie in the selected option
-  //    for (i = 0; i < lookup[selectValue].length; i++) {
-  //       // Output choice in the target field
-  //       $('#choices').append("<option value='" + lookup[selectValue][i] + "'>" + lookup[selectValue][i] + "</option>");
-  //    }
-  // });
+      $('#labelChanged').text(attributes_dict[sensor_id]);
 
-  //{ "conditions": {"temperature": "=12"}, "attributes": ["temperature"]}
-  
+    }).trigger('change');
+
     function queryDB(){
   
       document.getElementById("result_div").innerHTML = ""
@@ -270,6 +232,41 @@ button[type=button]:hover {
           console.log('error')
         }
     });
+    }
+
+    function load_Attributes(){
+      var keys = [];
+      var user_token = document.getElementById("user_token").value
+      var sensor_select = document.getElementById("sensor_id");
+      url2 = '/get_all_attributes/' + user_token
+      console.log(url2)
+      $.ajax({ 
+      headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json' 
+      },
+      url: url2,
+      type: 'GET',
+      success: function(result) {
+          for(var k in result) {
+            if (k == "All") {
+              keys.push(k);
+            }
+            else {
+              console.log(k)
+              var option = document.createElement("option");
+              keys.push(k);
+              option.text = k;
+              sensor_select.add(option);
+            }
+          }
+          window.value = result
+        },
+        error: function(result) {
+          console.log('error')
+        }
+    });
+
     }
     
   </script>

@@ -10,5 +10,9 @@ class Users(DjangoCassandraModel):
     user_password_value = columns.Text()
 
 class TokensTable(DjangoCassandraModel):
-    user_name_value = columns.Text(primary_key=True)
+    user_email_value = columns.Text()
+    user_token_value = columns.Text(primary_key=True)
+
+class TokensTable_secondary(DjangoCassandraModel):
+    user_email_value = columns.Text(primary_key=True)
     user_token_value = columns.Text()
