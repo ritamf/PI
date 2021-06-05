@@ -12,9 +12,10 @@ body {font-family: "Lato", sans-serif}
 .mySlides {display: none}
 
 input[type=text], select {
-  width: 100%;
+  width: 30%;
   padding: 12px 20px;
   margin: 8px 0;
+  margin-right:20px;
   display: inline-block;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -25,7 +26,7 @@ input[type=text], select {
   width: 85%;
 }
 
-input[type=date], select {
+input[type=date] {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
@@ -33,6 +34,28 @@ input[type=date], select {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+select {
+  width: 15%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  margin-left:20px;
+  margin-right:20px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+label {
+  font-size: large;
+}
+
+#sensor_id {
+  width: 100%;
+  margin-left:0px;
+  margin-right:0px;
 }
 
 #loadAttributes {
@@ -66,6 +89,11 @@ button[type=button]:hover {
   border-radius: 5px;
   background-color: #f2f2f2;
   padding: 20px;
+}
+
+html, body, #form_div {
+    min-height: 100% !important;
+    height: 100%;
 }
 
 #result_div {
@@ -113,7 +141,6 @@ button[type=button]:hover {
   float:right;
 }
 
-
 </style>
 
 <body>
@@ -136,28 +163,27 @@ button[type=button]:hover {
     
     <!-- <label for="JSON_input">JSON input</label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input.."> -->
-      <label>Sensor target</label>
+      <label id="sensor_target">Sensor target</label>
       <select id="sensor_id" class="form-control select2" name="comp_type" style="width: 100%;">
-        <!-- <option disabled="true" selected >Company Type</option> -->
-        {% for i in sensors %}
+
+        <!-- {% for i in sensors %}
         <option value="{{ i }}">{{ i }}</option>
-        {% endfor %}
+        {% endfor %} -->
 
         <option value="all">All</option>
       </select>
 
       
-    <label for="attributes">Attributes: </label>
-    <label id="labelChanged"></label>
-    <input type="text" id="attributes" name="attributes" placeholder='Example: ["temperature"]'>
+    <label for="attributes">Attributes to be shown: </label>
+    <!-- <label id="labelChanged"></label>
+    <input type="text" id="attributes" name="attributes" placeholder='Example: ["temperature"]'> -->
 
-    
+    <div id="container" class="container"></div>
 
     <label for="conditions">Conditions: </label>
-    <input type="text" id="conditions" name="conditions" placeholder='Example: {"temperature": "=12"}'>
+    <!-- <input type="text" id="conditions" name="conditions" placeholder='Example: {"temperature": "=12"}'> -->
 
-    <!-- <label for="from_ts">From</label>
-    <input type="text" id="from_ts" name="from_ts" placeholder="Query from this date.." value="None"> -->
+    <div id="container2" class="container"></div>
 
     <label for="from_ts">From: </label>
     <input type="date" id="from_ts" name="from_ts" value="None" min="2019-02-02" max="2021-12-03"> 
@@ -180,19 +206,8 @@ button[type=button]:hover {
 </div>
 <script>
 
-    var newLabel = '';
     $('#sensor_id').on('change', function(){
-
-      sensor_id = document.getElementById("sensor_id").value
-
-      console.log(sensor_id)
-
-      console.log(window.value)
-
-      attributes_dict = window.value
-
-      $('#labelChanged').text(attributes_dict[sensor_id]);
-
+      load_attributes_function()
     }).trigger('change');
 
     function queryDB(){
@@ -201,16 +216,62 @@ button[type=button]:hover {
   
       var result_div = document.getElementById("result_div");
       
-      var conditions = JSON.parse(document.getElementById("conditions").value)
-      var attributes = JSON.parse(document.getElementById("attributes").value)
+      var attributes = []
+      var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        attributes.push(checkboxes[i].value)
+      }
+
+      var checkboxes_2 = document.querySelectorAll('input[type=checkbox]')
+
+      var condition_list = [];
+
+      for (var i = 0; i < checkboxes_2.length; i++) {
+        condition_operator = document.getElementById("select" + i).value;
+        condition_value = document.getElementById("value" + i).value;
+
+        condition2_operator = document.getElementById("2select" + i).value;
+        condition2_value = document.getElementById("2value" + i).value;
+
+        if (condition_value == "" && condition2_value == ""){
+          //pass
+        }
+
+        else {
+
+          if (condition2_value == ""){
+            //condition_dict[checkboxes_2[i].value] = condition_operator + condition_value
+            first_condition = [checkboxes_2[i].value,condition_operator,condition_value]
+            
+            condition_list.push(first_condition)
+          }
+
+          else if (condition_value == "") {
+            second_condition = [checkboxes_2[i].value,condition2_operator,condition2_value]
+
+            condition_list.push(second_condition)
+          }
+
+          else {
+            first_condition = [checkboxes_2[i].value,condition_operator,condition_value]
+
+            second_condition = [checkboxes_2[i].value,condition2_operator,condition2_value]
+
+            condition_list.push(first_condition)
+            condition_list.push(second_condition)
+          }
+          
+        }
+      }
+      
       var from_ts = document.getElementById("from_ts").value
       var to_ts = document.getElementById("to_ts").value
       var sensor_id = document.getElementById("sensor_id").value
       var user_token = document.getElementById("user_token").value
       console.log(sensor_id)
       var url2 = '/query_db/' + user_token + '/' + sensor_id
-      data_dict = JSON.stringify({ "conditions": conditions, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
-      console.log(typeof data_dict);
+      data_dict = JSON.stringify({ "conditions": condition_list, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
       console.log(data_dict)
       $.ajax({ 
       headers: { 
@@ -231,15 +292,14 @@ button[type=button]:hover {
         error: function(result) {
           console.log('error')
         }
-    });
+      });
     }
 
-    function load_Attributes(){
+    async function load_Attributes(){
       var keys = [];
       var user_token = document.getElementById("user_token").value
       var sensor_select = document.getElementById("sensor_id");
       url2 = '/get_all_attributes/' + user_token
-      console.log(url2)
       $.ajax({ 
       headers: { 
           'Accept': 'application/json',
@@ -249,11 +309,10 @@ button[type=button]:hover {
       type: 'GET',
       success: function(result) {
           for(var k in result) {
-            if (k == "All") {
+            if (k == "all") {
               keys.push(k);
             }
             else {
-              console.log(k)
               var option = document.createElement("option");
               keys.push(k);
               option.text = k;
@@ -261,14 +320,226 @@ button[type=button]:hover {
             }
           }
           window.value = result
+          load_attributes_function();
         },
         error: function(result) {
           console.log('error')
         }
-    });
 
+        
+    });}
+
+    function load_attributes_function() {
+
+      try {
+        var elem = document.getElementById("checkbox_div_id");
+        elem.parentNode.removeChild(elem);
+
+        var elem = document.getElementById("conditions_div_id");
+        elem.parentNode.removeChild(elem);
+
+        var elem = document.getElementById("conditions_div_id_2");
+        elem.parentNode.removeChild(elem);
+
+        load_attributes_checkboxes()
+
+        load_conditions_div()
+
+      }
+
+      catch {
+        load_attributes_checkboxes()
+
+        load_conditions_div()
+      }
     }
-    
+
+    function load_attributes_checkboxes() {
+
+        sensor_id = document.getElementById("sensor_id").value
+
+        attributes_dict = window.value
+
+        var checkbox_div = document.createElement('div');
+
+        checkbox_div.id = "checkbox_div_id"
+
+        var container = document.getElementById('container');
+
+        container.appendChild(checkbox_div);
+
+        // For each choice in the selected option
+        for (var i = 0; i < attributes_dict[sensor_id].length; i++) {
+          if (attributes_dict[sensor_id][i] == "timestamp") {
+            //pass
+          }
+
+          else {
+            var attribute = toString(attributes_dict[sensor_id][i])
+            var checkbox = document.createElement('input');
+
+            checkbox.type = 'checkbox';
+            checkbox.id = attributes_dict[sensor_id][i];
+            checkbox.name = 'interest';
+            checkbox.value = attributes_dict[sensor_id][i];
+
+            var label = document.createElement('label');
+            label.setAttribute("style", "font-size: medium; margin-left:10px; margin-right:10px;");
+            label.htmlFor = attributes_dict[sensor_id][i];
+            label.appendChild(document.createTextNode(attributes_dict[sensor_id][i]));
+
+            var br = document.createElement('br');
+
+            //var container = document.getElementById('container');
+            checkbox_div.appendChild(checkbox);
+            checkbox_div.appendChild(label);
+            checkbox_div.appendChild(br);
+          }
+        }
+    }
+
+    function load_conditions_div() {
+
+      attributes_dict = window.value
+
+      var conditions_div = document.createElement('div');
+      var conditions_div_2 = document.createElement('div');
+
+      conditions_div.id = "conditions_div_id"
+      conditions_div_2.id = "conditions_div_id_2"
+
+      var container = document.getElementById('container2');
+
+      container.appendChild(conditions_div);
+      container.appendChild(conditions_div_2);
+
+      var id_increment = 0;
+
+      for (var i = 0; i < attributes_dict[sensor_id].length; i++) {
+          
+          if (attributes_dict[sensor_id][i] == "timestamp") {
+            //pass
+          }
+
+          else {
+
+            var label = document.createElement('label');
+            var label_2 = document.createElement('label');
+            var br = document.createElement('br');
+            var br_2 = document.createElement('br');
+
+            label.setAttribute("style", "font-size: medium;");
+            label_2.setAttribute("style", "font-size: medium;");
+
+            selector_id = "select" + id_increment
+            value_input_id = "value" + id_increment
+
+            selector_id_2 = "2select" + id_increment
+            value_input_id_2 = "2value" + id_increment
+
+            id_increment = id_increment + 1;
+
+            var selector = document.createElement("SELECT");
+            selector.setAttribute("id", selector_id);
+
+            var selector_2 = document.createElement("SELECT");
+            selector_2.setAttribute("id", selector_id_2);
+        
+            label.htmlFor = attributes_dict[sensor_id][i];
+            label.appendChild(document.createTextNode(attributes_dict[sensor_id][i]));
+
+            label_2.htmlFor = attributes_dict[sensor_id][i];
+            label_2.appendChild(document.createTextNode(attributes_dict[sensor_id][i]));
+
+            var value_input = document.createElement("input");
+            value_input.type = "text"
+            value_input.placeholder = "write the value here"
+            value_input.id = value_input_id;
+
+            var value_input_2 = document.createElement("input");
+            value_input_2.type = "text"
+            value_input_2.placeholder = "write the value here"
+            value_input_2.id = value_input_id_2;
+
+            conditions_div.setAttribute("style", "width:50%; float:left;");
+            conditions_div_2.setAttribute("style", "width:50%; float:right;");
+            
+            conditions_div.appendChild(label);
+            conditions_div.appendChild(selector);
+            conditions_div.appendChild(value_input);
+            conditions_div_2.appendChild(label_2);
+            conditions_div_2.appendChild(selector_2);
+            conditions_div_2.appendChild(value_input_2);
+            conditions_div.appendChild(br);
+            conditions_div_2.appendChild(br_2);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", ">");
+            var t = document.createTextNode(">");
+            z.appendChild(t);
+            document.getElementById(selector_id).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "<");
+            var t = document.createTextNode("<");
+            z.appendChild(t);
+            document.getElementById(selector_id).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "=");
+            var t = document.createTextNode("=");
+            z.appendChild(t);
+            document.getElementById(selector_id).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", ">=");
+            var t = document.createTextNode(">=");
+            z.appendChild(t);
+            document.getElementById(selector_id).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "<=");
+            var t = document.createTextNode("<=");
+            z.appendChild(t);
+            document.getElementById(selector_id).appendChild(z);
+
+            //
+
+            var z = document.createElement("option");
+            z.setAttribute("value", ">");
+            var t = document.createTextNode(">");
+            z.appendChild(t);
+            document.getElementById(selector_id_2).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "<");
+            var t = document.createTextNode("<");
+            z.appendChild(t);
+            document.getElementById(selector_id_2).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "=");
+            var t = document.createTextNode("=");
+            z.appendChild(t);
+            document.getElementById(selector_id_2).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", ">=");
+            var t = document.createTextNode(">=");
+            z.appendChild(t);
+            document.getElementById(selector_id_2).appendChild(z);
+
+            var z = document.createElement("option");
+            z.setAttribute("value", "<=");
+            var t = document.createTextNode("<=");
+            z.appendChild(t);
+            document.getElementById(selector_id_2).appendChild(z);
+            
+          }
+      }
+
+      
+    }
   </script>
 </body>
 </html>

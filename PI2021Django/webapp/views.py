@@ -269,7 +269,7 @@ def get_all_attributes(request,user_token):
 
     all_attributes_2 = list(dict.fromkeys(all_attributes_2))
 
-    attributes_dict = {"All": all_attributes_2}
+    attributes_dict = {"all": all_attributes_2}
 
     #for each sensor, get attributes
 
