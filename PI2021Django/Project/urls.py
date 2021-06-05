@@ -39,4 +39,6 @@ urlpatterns = [
     path('<str:user_token>/grafana/search', views.datasource_search, name="datasource_available_search"),
     path('<str:user_token>/grafana/query', views.datasource_query, name="datasource_query"),
     path('<str:user_token>/grafana/annotations', views.datasource_annotations, name="datasource_annotations"),
+    path('<str:user_token>/grafana/tag-keys', views.datasource_tagkeys, name="datasource_tagkeys"),
+    path('<str:user_token>/grafana/tag-values', views.datasource_tagvalues, name="datasource_tagvalues"),
 ]

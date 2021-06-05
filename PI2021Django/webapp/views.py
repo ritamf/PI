@@ -6,7 +6,6 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from django.core.mail import send_mail
-import requests
 from datetime import datetime, timedelta
 import statistics
 from operator import itemgetter
@@ -381,6 +380,7 @@ def datasource_search(request,user_token):
 @api_view(['POST'])
 def datasource_query(request,user_token):
     try:
+        print(request.body)
         h2 = hashlib.new('sha512_256')
 
         h2.update(user_token.encode('utf-8'))
@@ -400,12 +400,13 @@ def datasource_query(request,user_token):
         intervalMs = None
         maxDataPoints = None
         if 'adhocFilters' in data:
-            condicoes = {}
+            condicoes = []
             c = data['adhocFilters']
             for dic in c:
                 param = dic['key']
-                condic = dic['operator'] + dic['value']
-                condicoes[param] = condic
+                value = dic['value']
+                condic = dic['operator']
+                condicoes.append([param,condic,value])
         if 'intervalMs' in data:
             intervalMs = data['intervalMs']
         if 'maxDataPoints' in data:
@@ -531,8 +532,9 @@ def dataframe_to_response(target, results, freq, ti, tf):
                 if ts <= point + timedelta(seconds=freq / 1000) and ts>= point:
                     point_attribute_values.append(dic[attribute])
                 else:
-                    break
+                    continue
             if len(point_attribute_values) > 0:
+                print(point_attribute_values)
                 point_attribute_average = sum(point_attribute_values) / len(point_attribute_values)
             else:
                 point_attribute_average = 0
@@ -553,7 +555,79 @@ def to_epoch(dt_format):
     return epoch
 
 # '<str:user_token>/grafana/annotations'
-@api_view(['GET'])
-def datasource_annotations(self,user_token):
-    content = {'Test connection': 'datasource config page test'}
-    return Response(content, status=status.HTTP_200_OK)
+@api_view(['POST'])
+def datasource_annotations(request,user_token):
+    print(request.body)
+    unix_epoch_time = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000)
+    content = {'text': 'text shown in body','time':unix_epoch_time}
+    return Response(content)
+
+# '<str:user_token>/grafana/tag-keys'
+@api_view(['POST'])
+def datasource_tagkeys(self,user_token):
+    h2 = hashlib.new('sha512_256')
+
+    h2.update(user_token.encode('utf-8'))
+
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+
+    sessCache = cache.get(user_name)
+
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
+        sessCache = cache.get(user_name)
+
+    tagkeys_list = []
+
+    all_attributes = DB.getAllSensorsAttributes(sessCache)
+
+    all_attributes_2 = [attribute for attributeList in all_attributes for attribute in attributeList[2] ]
+
+    all_attributes_2 = list(dict.fromkeys(all_attributes_2))
+
+    for i in all_attributes_2:
+        tagkeys_list.append({"type":"string","text":i})
+    
+    return Response(tagkeys_list)
+
+# '<str:user_token>/grafana/tag-values'
+@api_view(['POST'])
+def datasource_tagvalues(request,user_token):
+    h2 = hashlib.new('sha512_256')
+
+    h2.update(user_token.encode('utf-8'))
+
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+
+    sessCache = cache.get(user_name)
+
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
+        sessCache = cache.get(user_name)
+
+    req = request.data
+
+    tag_value_key = req["key"]
+
+    tag_value_key_list = [tag_value_key]
+
+    values = DB.queryPerUser(sessCache, tag_value_key_list, [])
+
+    tagvalue_list = []
+
+    for i in values:
+
+        tagvalue_temp = {"test": str(i[tag_value_key])}
+
+        if tagvalue_temp not in tagvalue_list:
+            tagvalue_list.append(tagvalue_temp)
+    
+    return Response(tagvalue_list)

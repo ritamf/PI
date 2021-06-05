@@ -461,8 +461,8 @@ html, body, #form_div {
             value_input_2.placeholder = "write the value here"
             value_input_2.id = value_input_id_2;
 
-            conditions_div.setAttribute("style", "width:50%; float:left;");
-            conditions_div_2.setAttribute("style", "width:50%; float:right;");
+            conditions_div.setAttribute("style", "display: grid; width:50%; float:left; grid-template-columns: 20% 35% 45%;");
+            conditions_div_2.setAttribute("style", "display: grid; width:50%; float:right; grid-template-columns: 20% 35% 45%;");
             
             conditions_div.appendChild(label);
             conditions_div.appendChild(selector);
@@ -472,6 +472,14 @@ html, body, #form_div {
             conditions_div_2.appendChild(value_input_2);
             conditions_div.appendChild(br);
             conditions_div_2.appendChild(br_2);
+
+            label.setAttribute("style", "grid-column-start: 1; font-size: medium; margin-top: 10%;");
+            selector.setAttribute("style", "grid-column-start: 2; width:40%;");
+            value_input.setAttribute("style", "grid-column-start: 3; width:60%;");
+
+            label_2.setAttribute("style", "grid-column-start: 1; font-size: medium; margin-top: 10%;");
+            selector_2.setAttribute("style", "grid-column-start: 2; width:40%;");
+            value_input_2.setAttribute("style", "grid-column-start: 3; width:60%;");
 
             var z = document.createElement("option");
             z.setAttribute("value", ">");
