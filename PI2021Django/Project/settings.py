@@ -93,7 +93,7 @@ DATABASES = {
         'USER': 'cassandra',
         'PASSWORD': 'cassandra',
         'TEST_NAME': 'test_db',
-        'HOST': '127.0.0.1',
+        'HOST': '10.0.12.65',
         'OPTIONS': {
             'replication': {
                 'strategy_class': 'SimpleStrategy',
