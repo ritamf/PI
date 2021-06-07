@@ -10,6 +10,7 @@ ARG CASS_DRIVER_BUILD_CONCURRENCY="8"
 RUN pip install -r /requirements.txt
 RUN apk del .tmp
 
+COPY manage.py /manage.py
 RUN mkdir /Project
 COPY ./Project /Project
 RUN mkdir /templates
