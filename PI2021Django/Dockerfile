@@ -7,7 +7,7 @@ RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers
 RUN apk add --no-cache git
 ARG CASS_DRIVER_NO_CYTHON="1"
 ARG CASS_DRIVER_BUILD_CONCURRENCY="8"
-RUN pip install -r /requirements.txt
+RUN pip install -U -r /requirements.txt
 RUN apk del .tmp
 
 COPY manage.py /manage.py
