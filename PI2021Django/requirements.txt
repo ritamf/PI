@@ -1,5 +1,5 @@
-git+git://github.com/LuisValentim1/PI_DBOT_Lib@main#egg=DBoT
 Django
 djangorestframework
-django-cassandra-engine
-cassandra-driver
+django-cassandra-engine>=1.6.2
+cassandra-driver>=3.25.0 
+git+git://github.com/LuisValentim1/PI_DBOT_Lib@main#egg=DBoT
