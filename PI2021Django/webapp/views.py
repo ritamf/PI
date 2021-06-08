@@ -76,7 +76,7 @@ def logout_user_page(request,user_token):
 # '/authenticate_user
 @api_view(['POST'])
 @parser_classes([JSONParser])
-def authenticate_user_page(request):
+def authenticate_user_page(request, format=None):
 
     req = request.data
 
