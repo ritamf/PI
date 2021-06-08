@@ -5,7 +5,7 @@ services:
       context: .
     volumes:
       - ./app:/app
-      - static_data:/
+      - static_data:/vol/web
     network_mode: "host"  
     command: sh -c "python manage.py runserver 10.0.12.65:8000"
     environment: 
@@ -20,7 +20,7 @@ services:
     build:
       context: ./proxy
     volumes:
-      - static_data:/
+      - static_data:/vol/static
     ports:
       - "8080:8080"
     depends_on:
