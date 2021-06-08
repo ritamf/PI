@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import statistics
 from operator import itemgetter
 import traceback
-from rest_framework.parsers import JSONParser
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -75,8 +74,7 @@ def logout_user_page(request,user_token):
 
 # '/authenticate_user
 @api_view(['POST'])
-@parser_classes([JSONParser])
-def authenticate_user_page(request, format=None):
+def authenticate_user_page(request):
 
     req = request.data
 
