@@ -19,8 +19,6 @@ RUN mkdir /webapp
 COPY ./webapp /webapp
 RUN mkdir /scripts
 COPY ./scripts /scripts
-RUN mkdir /nginx
-COPY ./nginx /nginx
 RUN mkdir /static
 RUN mkdir /staticfiles
 RUN mkdir /proxy
