@@ -25,6 +25,7 @@ RUN mkdir /nginx
 COPY ./nginx /nginx
 RUN mkdir /static
 RUN mkdir /staticfiles
+RUN mkdir /proxy
 
 RUN chmod -x /scripts/*
 
