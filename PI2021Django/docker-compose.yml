@@ -5,11 +5,26 @@ services:
       context: .
     volumes:
       - ./app:/app
+      - static_data:/
     network_mode: "host"  
     command: sh -c "python manage.py runserver 10.0.12.65:8000"
     environment: 
       - DEBUG=0
+      - SECRET_KEY=rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j
+      - ALLOWEDHOSTS=10.0.12.65,10.0.12.66
   grafana:
     network_mode: "host"
     image: grafana/grafana:7.5.7
     user: "104"
+  proxy:
+    build:
+      context: ./proxy
+    volumes:
+      - static_data:/
+    ports:
+      - "8080:8080"
+    depends-on:
+      - app
+
+  volumes:
+    static_data:

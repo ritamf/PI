@@ -136,7 +136,6 @@ html, body, #form_div {
 <!-- Navbar -->
 <div class="wrap">
   <div class="topnav">
-    <!-- <a href="{% url 'home_page' %}">HOME</a> -->
     <a class="active" href="{% url 'db_insert_page' %}">INSERT</a>
     <a href="{% url 'db_query_page' %}">QUERY</a>
     <a class="logout" href="{% url 'logout_page' %}" onclick="logout_user()">LOGOUT</a>
@@ -156,12 +155,6 @@ html, body, #form_div {
     <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
 
-    <!-- <label for="country">Country</label>
-    <select id="country" name="country">
-      <option value="australia">Australia</option>
-      <option value="canada">Canada</option>
-      <option value="usa">USA</option>
-    </select> -->
     <button id="insert" type="submit" onclick="callInsert()">Insert</button>
   </form>
 </div>

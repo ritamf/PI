@@ -18,14 +18,20 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j'
+SECRET_KEY = os.environ.get('SECRET_KEY','changeme')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    '10.0.12.65'
-]
+ALLOWED_HOSTS = []
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS.extend(ALLOWED_HOSTS_ENV.split(','))
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 # Application definition
 
@@ -42,8 +48,6 @@ INSTALLED_APPS = [
 ]
 
 SESSION_ENGINE = 'django_cassandra_engine.sessions.backends.db'
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -109,12 +113,6 @@ DATABASES = {
             }
         }
     },
-    # 'users': {
-    #     'NAME': 'users',
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'USER': 'mysql_user',
-    #     'PASSWORD': 'priv4te'
-    # }
 }
 
 APPEND_SLASH = True

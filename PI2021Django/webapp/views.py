@@ -255,7 +255,6 @@ def get_all_attributes(request,user_token):
 
     sessCache = cache.get(user_name)
 
-    #novo
     if sessCache is None:
         user_session = DB.sessionLogin(user_name,user_password)
         cache.add(user_session[0],user_session[1])
@@ -269,8 +268,6 @@ def get_all_attributes(request,user_token):
     all_attributes_2 = list(dict.fromkeys(all_attributes_2))
 
     attributes_dict = {"all": all_attributes_2}
-
-    #for each sensor, get attributes
 
     sensors_list = DB.getSensors(sessCache)
 
@@ -296,12 +293,7 @@ def home_page(request, *args, **kwargs):
 def db_insert_page(request, *args, **kwargs):
     print(args, kwargs)
 
-    context = {
-        'user': 'admin',
-        'sensorid': 1,
-    }
-    
-    return render(request, "insert.html", context)
+    return render(request, "insert.html", {})
 
 # '/query'
 def db_query_page(request, *args, **kwargs):
@@ -313,8 +305,6 @@ def db_query_page(request, *args, **kwargs):
 def db_token_page(request, token):
 
     context = {
-        'user': 'admin',
-        'sensorid': 1,
         'user_token': token,
     }
     
@@ -339,7 +329,6 @@ def datasource_test(self,user_token):
     return Response(status.HTTP_200_OK)
 
 # '<str:user_token>/grafana/search'
-#{ "target": "query field value" }
 @api_view(['POST'])
 def datasource_search(request,user_token):
 
@@ -414,8 +403,6 @@ def datasource_query(request,user_token):
 
         ti_ts = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
         tf_ts = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
-        # ti_ts = datetime.strptime(ti,"%Y-%m-%d %H:%M:%S")
-        # tf_ts = datetime.strptime(tf,"%Y-%m-%d %H:%M:%S")
         tempo = ti_ts - tf_ts
         tempo_seconds = tempo.total_seconds()
 
@@ -428,7 +415,6 @@ def datasource_query(request,user_token):
         results = []
 
         req_type = target.get('type', 'timeserie')
-        # targets Ã© tudo o que aparece no mesmo dashboard
         sensor, campo = target['target'].split('.', 1)
 
         if campo is None or campo == '':
@@ -508,12 +494,6 @@ def dataframe_to_response(target, results, freq, ti, tf):
         campos.remove("timestamp")
     else:
         campos = []
-
-    # ti = ti.strftime("%Y-%m-%dT%H:%M:%S.%fZ") # passa para string no formato que queremos
-    # tf = tf.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    # ti = datetime.strptime(ti,"%Y-%m-%dT%H:%M:%S.%fZ")
-    # tf = datetime.strptime(tf,"%Y-%m-%dT%H:%M:%S.%fZ")
 
     point = ti
 
@@ -607,7 +587,6 @@ def datasource_tagvalues(request,user_token):
 
     sessCache = cache.get(user_name)
 
-    #novo
     if sessCache is None:
         user_session = DB.sessionLogin(user_name,user_password)
         cache.add(user_session[0],user_session[1])

@@ -147,7 +147,6 @@ html, body, #form_div {
 
 <!-- Navbar -->
 <div class="topnav">
-  <!-- <a href="{% url 'home_page' %}">HOME</a> -->
   <a href="{% url 'db_insert_page' %}">INSERT</a>
   <a class="active" href="{% url 'db_query_page' %}">QUERY</a>
   <a class="logout" href="{% url 'logout_page' %}" onclick="logout_user()">LOGOUT</a>
@@ -161,28 +160,16 @@ html, body, #form_div {
       <button type="button" id="loadAttributes" onclick="load_Attributes()">Load Attributes</button>
     </div>
     
-    <!-- <label for="JSON_input">JSON input</label>
-    <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input.."> -->
       <label id="sensor_target">Sensor target</label>
       <select id="sensor_id" class="form-control select2" name="comp_type" style="width: 100%;">
-
-        <!-- {% for i in sensors %}
-        <option value="{{ i }}">{{ i }}</option>
-        {% endfor %} -->
-
         <option value="all">All</option>
       </select>
 
       
     <label for="attributes">Attributes to be shown: </label>
-    <!-- <label id="labelChanged"></label>
-    <input type="text" id="attributes" name="attributes" placeholder='Example: ["temperature"]'> -->
-
     <div id="container" class="container"></div>
 
     <label for="conditions">Conditions: </label>
-    <!-- <input type="text" id="conditions" name="conditions" placeholder='Example: {"temperature": "=12"}'> -->
-
     <div id="container2" class="container"></div>
 
     <label for="from_ts">From: </label>
@@ -241,7 +228,6 @@ html, body, #form_div {
         else {
 
           if (condition2_value == ""){
-            //condition_dict[checkboxes_2[i].value] = condition_operator + condition_value
             first_condition = [checkboxes_2[i].value,condition_operator,condition_value]
             
             condition_list.push(first_condition)
@@ -286,7 +272,6 @@ html, body, #form_div {
           document.getElementById("result_div").innerHTML += JSON.stringify(element);
           document.getElementById("result_div").innerHTML += "<br>"
         }
-        //document.getElementById("result_div").innerHTML = JSON.stringify(result);
         result_div.style.visibility = "visible";
         },
         error: function(result) {
@@ -390,7 +375,6 @@ html, body, #form_div {
 
             var br = document.createElement('br');
 
-            //var container = document.getElementById('container');
             checkbox_div.appendChild(checkbox);
             checkbox_div.appendChild(label);
             checkbox_div.appendChild(br);
@@ -545,8 +529,6 @@ html, body, #form_div {
             
           }
       }
-
-      
     }
   </script>
 </body>
