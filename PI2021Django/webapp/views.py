@@ -73,7 +73,7 @@ def logout_user_page(request,user_token):
     return Response("successfully logged out")
 
 # '/authenticate_user
-@api_view(['POST', 'GET'])
+@api_view(['POST'])
 def authenticate_user_page(request):
 
     req = request.data
