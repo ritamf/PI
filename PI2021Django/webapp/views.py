@@ -84,6 +84,8 @@ def authenticate_user_page(request):
     h = hashlib.new('sha512_256')
     h.update(user_password.encode('utf-8'))
 
+    h_hexdigest = h.hexdigest()
+
     h2 = hashlib.new('sha512_256')
     h2.update(user_email.encode('utf-8'))
 
@@ -91,10 +93,10 @@ def authenticate_user_page(request):
     
     userObj = Users.objects.get(user_email_value=h2_hexdigest)
 
-    if (userObj.user_password_value == h.hexdigest()):
+    if (userObj.user_password_value == h_hexdigest):
         
         user_name = Users.objects.get(user_email_value=h2_hexdigest).user_name_value
-        user_session = DB.sessionLogin(user_name,h.hexdigest())
+        user_session = DB.sessionLogin(user_name,h_hexdigest)
         cache.add(user_session[0],user_session[1])
         
         print(cache.get(user_name))
