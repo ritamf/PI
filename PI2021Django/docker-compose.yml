@@ -5,7 +5,6 @@ services:
       context: .
     volumes:
       - ./app:/app
-      - static_data:/vol/web
     network_mode: "host"  
     command: sh -c "python manage.py runserver 10.0.12.65:8000"
     environment: 
