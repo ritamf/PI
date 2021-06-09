@@ -8,7 +8,7 @@ services:
     network_mode: "host"  
     command: sh -c "python manage.py runserver 10.0.12.65:8000"
     environment: 
-      - DEBUG=0
+      - DEBUG=1
       - SECRET_KEY=rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j
   grafana:
     network_mode: "host"
