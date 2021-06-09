@@ -60,7 +60,10 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.JSONParser', # Parse json packet
+        'rest_framework.parsers.FormParser', # parse urlencoded packets
+        'rest_framework.parsers.MultiPartParser' # parse from-data packet
+
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
