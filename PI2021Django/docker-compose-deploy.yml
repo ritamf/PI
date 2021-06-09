@@ -1,0 +1,21 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - static_data:/vol/web
+    environment: 
+      - SECRET_KEY=rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j
+  proxy:
+    build:
+      context: ./proxy
+    volumes:
+      - static_data:/vol/static
+    ports:
+      - "8080:8080"
+    depends_on:
+      - app
+
+volumes:
+  static_data:

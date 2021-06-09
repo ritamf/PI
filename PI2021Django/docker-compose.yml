@@ -15,15 +15,3 @@ services:
     network_mode: "host"
     image: grafana/grafana:7.5.7
     user: "104"
-  proxy:
-    build:
-      context: ./proxy
-    volumes:
-      - static_data:/vol/static
-    ports:
-      - "8080:8080"
-    depends_on:
-      - app
-
-volumes:
-  static_data:
