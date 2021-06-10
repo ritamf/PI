@@ -308,6 +308,11 @@ footer a {
 			<input type="password" placeholder="Password" id="signUpPassword"/>
 			<input type="password" placeholder="Confirm Password" id="signUpPasswordConfirm"/>
 			<button id="registerButton">Sign Up</button>
+			<!-- Image loader -->
+			<div id='loader' style='display: none;'>
+				<img src='reload.gif' width='32px' height='32px'>
+			</div>
+			 <!-- Image loader -->
 		</form>
 	</div>
 	<div class="form-container sign-in-container">
@@ -396,12 +401,20 @@ function registerUser() {
     url: '/register_user',
     type: 'POST',
     data: json,
+	beforeSend: function(){
+    	// Show image container
+    	$("#loader").show();
+   	},
     success: function(result) {
         console.log('ok')
       },
-      error: function(result) {
+    error: function(result) {
         console.log('error')
-      }
+    },
+	complete:function(data){
+    	// Hide image container
+    	$("#loader").hide();
+   	}
   });
   } 
 }
