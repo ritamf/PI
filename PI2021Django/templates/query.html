@@ -297,15 +297,19 @@ html, body, #form_div {
             select.options[i] = null;
           }
           for(var k in result) {
-            // if (k == "all") {
-            //   keys.push(k);
-            // }
-            // else {
+            if (k == "all") {
+              var option = document.createElement("option");
+              keys.push(k);
+              option.text = "All";
+              sensor_select.add(option);
+              option.selected = true;
+            }
+            else {
               var option = document.createElement("option");
               keys.push(k);
               option.text = k;
               sensor_select.add(option);
-            //}
+            }
           }
           window.value = result
           load_attributes_function();
