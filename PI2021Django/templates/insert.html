@@ -85,18 +85,20 @@ html, body, #form_div {
 </style>
 <script>
 
-  async function callInsert() {
+  function callInsert() {
     var json = JSON.parse(document.getElementById("JSON_input").value)
 
-    for(var i = 0; i < json.length; i++){
+    if(Array.isArray(json)){
+      insertIntoDB(JSON.stringify(json))
+    }
 
-      console.log(json[i])
-
-      await insertIntoDB(JSON.stringify(json[i]))
+    else {
+      json_list = [json]
+      insertIntoDB(JSON.stringify(json_list))
     }
   }
 
-  async function insertIntoDB(json,_callback){
+  function insertIntoDB(json){
     var sensorid = document.getElementById("sensorID").value
     var user_token = document.getElementById("user_token").value
     var url2 = '/insert_into_db/' + user_token + "/" + sensorid
@@ -110,7 +112,6 @@ html, body, #form_div {
     data: json,
     success: function(result) {
         console.log('ok')
-        _callback();
       },
       error: function(result) {
         console.log('error')
