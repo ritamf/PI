@@ -141,7 +141,7 @@ def insert_into_db(request,user_token,sensorid):
 
     req = request.data
 
-    if (isinstance(req, list) or req[0] == "["):
+    if (isinstance(req, list)):
         pass
     else:
         req = "[" + req + "]";
