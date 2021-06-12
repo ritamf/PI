@@ -181,6 +181,8 @@ html, body, #form_div {
 
     <button id="query" type="button" onclick="queryDB()">Query</button>
 
+    <p style="visibility: hidden" id="invalid_credentials">Token is invalid</p>
+
     
   </form>
   <div id="result_div" style="visibility: hidden;">
@@ -266,11 +268,18 @@ html, body, #form_div {
       type: 'POST',
       data: data_dict,
       success: function(result) {
-        for( const element of result){
-          document.getElementById("result_div").innerHTML += JSON.stringify(element);
-          document.getElementById("result_div").innerHTML += "<br>"
-        }
-        result_div.style.visibility = "visible";
+        if (result != "invalid token") {
+          document.getElementById("invalid_credentials").style.visibility = "hidden"
+			    for( const element of result){
+            document.getElementById("result_div").innerHTML += JSON.stringify(element);
+            document.getElementById("result_div").innerHTML += "<br>"
+          }
+          result_div.style.visibility = "visible";
+		    }
+		    else {
+			    document.getElementById("invalid_credentials").style.visibility = "visible";
+		    }
+        
         },
         error: function(result) {
           console.log('error')

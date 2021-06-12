@@ -146,21 +146,25 @@ def insert_into_db(request,user_token,sensorid):
 
     h2.update(user_token.encode('utf-8'))
 
-    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
-    user_name = Users.objects.get(user_email_value=user_email).user_name_value
-    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+    try:
+        user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+        user_name = Users.objects.get(user_email_value=user_email).user_name_value
+        user_password = Users.objects.get(user_email_value=user_email).user_password_value
 
-    sessCache = cache.get(user_name)
-
-    #novo
-    if sessCache is None:
-        user_session = DB.sessionLogin(user_name,user_password)
-        cache.add(user_session[0],user_session[1])
         sessCache = cache.get(user_name)
+
+        #novo
+        if sessCache is None:
+            user_session = DB.sessionLogin(user_name,user_password)
+            cache.add(user_session[0],user_session[1])
+            sessCache = cache.get(user_name)
+
+        DB.insertIntoSensor(sessCache,parsedJson, sensorid)
     
-    DB.insertIntoSensor(sessCache,parsedJson, sensorid)
+        return Response(parsedJson)
     
-    return Response(parsedJson)
+    except:
+        return Response('invalid token')
 
 # '/query_db/<str:sensorid>'
 @api_view(['POST'])
@@ -176,53 +180,56 @@ def query_db(request,user_token,sensorid):
 
     h2_hexdigest = h2.hexdigest()
 
-    user_email = TokensTable.objects.get(user_token_value=h2_hexdigest).user_email_value
-    user_name = Users.objects.get(user_email_value=user_email).user_name_value
-    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+    try:
+        user_email = TokensTable.objects.get(user_token_value=h2_hexdigest).user_email_value
+        user_name = Users.objects.get(user_email_value=user_email).user_name_value
+        user_password = Users.objects.get(user_email_value=user_email).user_password_value
 
-    sessCache = cache.get(user_name)
-
-    #novo
-    if sessCache is None:
-        user_session = DB.sessionLogin(user_name,user_password)
-        cache.add(user_session[0],user_session[1])
         sessCache = cache.get(user_name)
 
-    conditions = req["conditions"]
+        #novo
+        if sessCache is None:
+            user_session = DB.sessionLogin(user_name,user_password)
+            cache.add(user_session[0],user_session[1])
+            sessCache = cache.get(user_name)
 
-    attributes = req["attributes"]
+        conditions = req["conditions"]
 
-    from_ts = req["from_ts"]
-    to_ts = req["to_ts"]
+        attributes = req["attributes"]
 
-    if h2_hexdigest == TokensTable.objects.get(user_email_value=user_email).user_token_value:
+        from_ts = req["from_ts"]
+        to_ts = req["to_ts"]
 
-        if sensorid != "all":
-            if attributes is not None:
-                if conditions is not None:
-                    if from_ts != "None" and from_ts != "":
-                        values = DB.rangeQueryPerSensor(sessCache, sensorid, attributes, conditions, from_ts, to_ts)
+        if h2_hexdigest == TokensTable.objects.get(user_email_value=user_email).user_token_value:
+
+            if sensorid != "all":
+                if attributes is not None:
+                    if conditions is not None:
+                        if from_ts != "None" and from_ts != "":
+                            values = DB.rangeQueryPerSensor(sessCache, sensorid, attributes, conditions, from_ts, to_ts)
+                        else:
+                            print("didnt use ts")
+                            values = DB.queryPerSensor(sessCache, sensorid, attributes, conditions)
                     else:
-                        print("didnt use ts")
-                        values = DB.queryPerSensor(sessCache, sensorid, attributes, conditions)
-                else:
-                    values = DB.queryPerSensor(sessCache, sensorid, attributes, {})
+                        values = DB.queryPerSensor(sessCache, sensorid, attributes, {})
+            else:
+                if attributes is not None:
+                    if conditions is not None:
+                        if from_ts != "None" and from_ts != "":
+                            values = DB.rangeQueryPerUser(sessCache, attributes, conditions, from_ts, to_ts)
+                        else:
+                            values = DB.queryPerUser(sessCache, attributes, conditions)
+                    else:
+                        values = []
+                        for c in attributes:
+                            dic = {c: DB.getAllValuesOn(c)}
+                            values.append(dic)
         else:
-            if attributes is not None:
-                if conditions is not None:
-                    if from_ts != "None" and from_ts != "":
-                        values = DB.rangeQueryPerUser(sessCache, attributes, conditions, from_ts, to_ts)
-                    else:
-                        values = DB.queryPerUser(sessCache, attributes, conditions)
-                else:
-                    values = []
-                    for c in attributes:
-                        dic = {c: DB.getAllValuesOn(c)}
-                        values.append(dic)
-    else:
-        return Response("invalid token")
+            return Response("invalid token")
 
-    return Response(values)
+        return Response(values)
+    except:
+        return Response('invalid token')
 
 # '/password_reset_request
 @api_view(['POST'])
