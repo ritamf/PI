@@ -136,7 +136,7 @@ def insert_into_db(request,user_token,sensorid):
 
     parsedJson = []
     for item in req:
-        jsonParserInit.flat_json(item.decode("utf-8"))
+        jsonParserInit.flat_json(json.parse(item))
         parsedJson.append(item)
 
     h2 = hashlib.new('sha512_256')
