@@ -159,24 +159,22 @@ def insert_into_db(request,user_token,sensorid):
     h2.update(user_token.encode('utf-8'))
 
     # try:
-        user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
-        user_name = Users.objects.get(user_email_value=user_email).user_name_value
-        user_password = Users.objects.get(user_email_value=user_email).user_password_value
-
+    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+    user_name = Users.objects.get(user_email_value=user_email).user_name_value
+    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+    sessCache = cache.get(user_name)
+    #novo
+    if sessCache is None:
+        user_session = DB.sessionLogin(user_name,user_password)
+        cache.add(user_session[0],user_session[1])
         sessCache = cache.get(user_name)
-
-        #novo
-        if sessCache is None:
-            user_session = DB.sessionLogin(user_name,user_password)
-            cache.add(user_session[0],user_session[1])
-            sessCache = cache.get(user_name)
-        
-        DB.insertIntoSensor(sessCache,parsedJson, sensorid)
     
-        return Response(parsedJson)
+    DB.insertIntoSensor(sessCache,parsedJson, sensorid)
+
+    return Response(parsedJson)
     
     # except:
-        return Response('invalid token')
+    return Response('invalid token')
 
 # '/query_db/<str:sensorid>'
 @csrf_exempt
