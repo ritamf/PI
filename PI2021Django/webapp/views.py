@@ -11,6 +11,7 @@ import statistics
 from operator import itemgetter
 import traceback
 from django.views.decorators.csrf import csrf_exempt
+import ast
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -139,6 +140,12 @@ def insert_into_db(request,user_token,sensorid):
     print(cache.cachedElements.keys())
 
     req = request.data
+
+    if (isinstance(req, list) or req[0] == "["):
+        req = ast.literal_eval(req);
+    else:
+        req = "[" + req + "]";
+        req = ast.literal_eval(req);
 
     jsonParserInit = JsonParser.JsonParser()
 
