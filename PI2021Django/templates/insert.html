@@ -112,12 +112,21 @@ html, body, #form_div {
     url: url2,
     type: 'POST',
     data: json,
+    beforeSend: function(){
+    	// Show image container
+    	$("#loader").show();
+   	},
     success: function(result) {
         console.log('ok')
       },
       error: function(result) {
         console.log('error')
-      }
+      },
+      complete:function(data){
+    	// Hide image container
+    	$("#loader").hide();
+   	}
+    
   });
   }
 
@@ -160,6 +169,12 @@ html, body, #form_div {
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
 
     <button id="insert" type="button" onclick="callInsert()">Insert</button>
+    <!-- Image loader -->
+			<div id='loader' style='display: none;'>
+				<img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' width='32px' height='32px'>
+			</div>
+			 <!-- Image loader -->
+		</form>
   </form>
 </div>
 </body>

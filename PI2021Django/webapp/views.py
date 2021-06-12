@@ -129,13 +129,9 @@ def insert_into_db(request,user_token,sensorid):
 
     print(cache.cachedElements.keys())
 
-    #req = json.dumps(request.data)
-
     req = request.data
 
     jsonParserInit = JsonParser.JsonParser()
-
-    #parsedJson = [jsonParserInit.flat_json(item) for item in req]
 
     parsedJson = []
     for item in req:

@@ -291,8 +291,9 @@ html, body, #form_div {
       url: url2,
       type: 'GET',
       success: function(result) {
+          var attributes_options = document.querySelectorAll('#loadAttributes option');
+          attributes_options.forEach(o => o.remove());
           for(var k in result) {
-            $('#loadAttributes option').remove();
             // if (k == "all") {
             //   keys.push(k);
             // }
