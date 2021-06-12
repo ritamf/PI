@@ -136,6 +136,7 @@ def insert_into_db(request,user_token,sensorid):
 
     parsedJson = []
     for item in req:
+        print(item)
         jsonParserInit.flat_json(json.dumps(item))
         parsedJson.append(item)
 
