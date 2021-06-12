@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import statistics
 from operator import itemgetter
 import traceback
+from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -31,6 +32,7 @@ cache = Cache.Cache(1)
 print(cache.cachedElements.keys())
 
 # '/register_user
+@csrf_exempt
 @api_view(['POST'])
 def register_user_page(request):
 
@@ -54,6 +56,7 @@ def register_user_page(request):
     return Response("success")
 
 # '/logout_user/<str:token>'
+@csrf_exempt
 @api_view(['GET'])
 def logout_user_page(request,user_token):
 
@@ -72,6 +75,7 @@ def logout_user_page(request,user_token):
     return Response("successfully logged out")
 
 # '/authenticate_user
+@csrf_exempt
 @api_view(['POST'])
 def authenticate_user_page(request):
 
@@ -128,6 +132,7 @@ def authenticate_user_page(request):
     return Response('password invalid')
 
 # '/insert_into_db
+@csrf_exempt
 @api_view(['POST'])
 def insert_into_db(request,user_token,sensorid):
 
@@ -167,6 +172,7 @@ def insert_into_db(request,user_token,sensorid):
         return Response('invalid token')
 
 # '/query_db/<str:sensorid>'
+@csrf_exempt
 @api_view(['POST'])
 def query_db(request,user_token,sensorid):
 
@@ -232,6 +238,7 @@ def query_db(request,user_token,sensorid):
         return Response('invalid token')
 
 # '/password_reset_request
+@csrf_exempt
 @api_view(['POST'])
 def password_reset_request(request):
 
@@ -256,6 +263,7 @@ def password_reset_request(request):
     return Response("success")
 
 # '/get_all_attributes/<str:user_token>
+@csrf_exempt
 @api_view(['GET'])
 def get_all_attributes(request,user_token):
 
@@ -298,24 +306,28 @@ def get_all_attributes(request,user_token):
     return Response(attributes_dict)
 
 # '/'
+@csrf_exempt
 def home_page(request, *args, **kwargs):
     print(args, kwargs)
     
     return render(request, "home.html", {})
 
 # '/insert'
+@csrf_exempt
 def db_insert_page(request, *args, **kwargs):
     print(args, kwargs)
 
     return render(request, "insert.html", {})
 
 # '/query'
+@csrf_exempt
 def db_query_page(request, *args, **kwargs):
     print(args, kwargs)
     
     return render(request, "query.html", {})
 
 # '/token/<str:token>'
+@csrf_exempt
 def db_token_page(request, token):
 
     context = {
@@ -326,23 +338,27 @@ def db_token_page(request, token):
 
 
 # '/logout'
+@csrf_exempt
 def logout_page(request, *args, **kwargs):
     print(args, kwargs)
     
     return render(request, "logout.html", {})
 
 # '/recover_password_page'
+@csrf_exempt
 def recover_password_page(request, *args, **kwargs):
     print(args, kwargs)
     
     return render(request, "recover_password.html", {})
 
 # '<str:user_token>/grafana'
+@csrf_exempt
 @api_view(['GET'])
 def datasource_test(self,user_token):
     return Response(status.HTTP_200_OK)
 
 # '<str:user_token>/grafana/search'
+@csrf_exempt
 @api_view(['POST'])
 def datasource_search(request,user_token):
 
@@ -380,6 +396,7 @@ def datasource_search(request,user_token):
     return Response(dropdownUnique)
     
 # '<str:user_token>/grafana/query'
+@csrf_exempt
 @api_view(['POST'])
 def datasource_query(request,user_token):
     try:
@@ -549,6 +566,7 @@ def to_epoch(dt_format):
     return epoch
 
 # '<str:user_token>/grafana/annotations'
+@csrf_exempt
 @api_view(['POST'])
 def datasource_annotations(request,user_token):
     print(request.body)
@@ -557,6 +575,7 @@ def datasource_annotations(request,user_token):
     return Response(content)
 
 # '<str:user_token>/grafana/tag-keys'
+@csrf_exempt
 @api_view(['POST'])
 def datasource_tagkeys(self,user_token):
     h2 = hashlib.new('sha512_256')
@@ -589,6 +608,7 @@ def datasource_tagkeys(self,user_token):
     return Response(tagkeys_list)
 
 # '<str:user_token>/grafana/tag-values'
+@csrf_exempt
 @api_view(['POST'])
 def datasource_tagvalues(request,user_token):
     h2 = hashlib.new('sha512_256')
