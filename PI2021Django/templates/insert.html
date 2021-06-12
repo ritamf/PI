@@ -92,17 +92,11 @@ html, body, #form_div {
 
       console.log(json[i])
 
-      if (i==0) {
-        insertIntoDB(JSON.stringify(json[i]))
-        await sleep(1000);
-      }
-
-      insertIntoDB(JSON.stringify(json[i]))
-      
+      await insertIntoDB(JSON.stringify(json[i]))
     }
   }
 
-  function insertIntoDB(json){
+  async function insertIntoDB(json,_callback){
     var sensorid = document.getElementById("sensorID").value
     var user_token = document.getElementById("user_token").value
     var url2 = '/insert_into_db/' + user_token + "/" + sensorid
@@ -116,6 +110,7 @@ html, body, #form_div {
     data: json,
     success: function(result) {
         console.log('ok')
+        _callback();
       },
       error: function(result) {
         console.log('error')
