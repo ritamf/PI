@@ -21,6 +21,7 @@ from django import template
 from django.core.cache import cache
 
 from .models import TokensTable, TokensTable_secondary, Users
+import logging
 
 from DBoT import DB, Cache
 from DBoT import JsonParser
@@ -128,7 +129,9 @@ def insert_into_db(request,user_token,sensorid):
 
     print(cache.cachedElements.keys())
 
-    req = json.dumps(request.data)
+    #req = json.dumps(request.data)
+
+    req = request.data
 
     jsonParserInit = JsonParser.JsonParser()
 
@@ -136,10 +139,9 @@ def insert_into_db(request,user_token,sensorid):
 
     parsedJson = []
     for item in req:
-        print("aaaaaaaaaaaaaaa")
-        print(item)
-        print("bbbbbbbbbbbbbbb")
-        jsonParserInit.flat_json(json.loads(item))
+        logging.debug("yo")
+        logging.debug(item)
+        jsonParserInit.flat_json(json.dumps(item))
         parsedJson.append(item)
 
     h2 = hashlib.new('sha512_256')
