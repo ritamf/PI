@@ -89,8 +89,16 @@ html, body, #form_div {
     var json = JSON.parse(document.getElementById("JSON_input").value)
 
     for(var i = 0; i < json.length; i++){
+
       console.log(json[i])
+
+      if (i==0) {
+        insertIntoDB(JSON.stringify(json[i]))
+        await sleep(1000);
+      }
+
       insertIntoDB(JSON.stringify(json[i]))
+      
     }
   }
 
