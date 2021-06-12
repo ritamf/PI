@@ -18,8 +18,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django import template
 
-from .serializers import sensorsSerializers# ,productsSerializers, attributesSerializers 
-
 from django.core.cache import cache
 
 from .models import TokensTable, TokensTable_secondary, Users
@@ -223,7 +221,6 @@ def query_db(request,user_token,sensorid):
 def password_reset_request(request):
 
     req = request.data
-    #{"input_email":"nekolapras@gmail.com"}
     input_email = req["input_email"]
 
     if Users.objects.get(user_email_value=input_email) is not None: #verificar seexiste uma conta com este mail

@@ -310,7 +310,7 @@ footer a {
 			<button id="registerButton">Sign Up</button>
 			<!-- Image loader -->
 			<div id='loader' style='display: none;'>
-				<img src='https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif' width='32px' height='32px'>
+				<img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' width='32px' height='32px'>
 			</div>
 			 <!-- Image loader -->
 		</form>
@@ -391,8 +391,6 @@ function registerUser() {
 
 	json = JSON.stringify({'name': signUpName, 'email': signUpEmail, 'password': signUpPassword});
 
-  	console.log(json)
-
 	$.ajax({ 
     headers: { 
         'Accept': 'application/json',
@@ -426,8 +424,6 @@ function authenticateUser() {
 
   json = JSON.stringify({'email': signInEmail, 'password': signInPassword});
 
-  console.log(json)
-
     $.ajax({ 
     headers: { 
         'Accept': 'application/json',
@@ -440,7 +436,6 @@ function authenticateUser() {
     cache: false,
     timeout: 100000,
     success: function(result) {
-        console.log(result)
 		if (result != "password or name invalid") {
 			location.href = '/token/' + result
 		}
