@@ -292,15 +292,16 @@ html, body, #form_div {
       type: 'GET',
       success: function(result) {
           for(var k in result) {
-            if (k == "all") {
-              keys.push(k);
-            }
-            else {
+            $('#loadAttributes option').remove();
+            // if (k == "all") {
+            //   keys.push(k);
+            // }
+            // else {
               var option = document.createElement("option");
               keys.push(k);
               option.text = k;
               sensor_select.add(option);
-            }
+            //}
           }
           window.value = result
           load_attributes_function();
