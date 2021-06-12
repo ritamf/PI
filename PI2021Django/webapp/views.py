@@ -142,7 +142,7 @@ def insert_into_db(request,user_token,sensorid):
     req = request.data
 
     if (isinstance(req, list) or req[0] == "["):
-        req = ast.literal_eval(req);
+        pass
     else:
         req = "[" + req + "]";
         req = ast.literal_eval(req);
