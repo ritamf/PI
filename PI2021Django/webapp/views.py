@@ -94,7 +94,7 @@ def authenticate_user_page(request):
         userObj = Users.objects.get(user_email_value=h2_hexdigest)
 
     except:
-        return Response('this email is invalid')
+        return Response('email invalid')
 
     if (userObj.user_password_value == h_hexdigest):
         

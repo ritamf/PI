@@ -436,7 +436,7 @@ function authenticateUser() {
     cache: false,
     timeout: 100000,
     success: function(result) {
-		if (result != "password or name invalid") {
+		if (result != "email invalid" || result != "password invalid") {
 			location.href = '/token/' + result
 		}
       },
