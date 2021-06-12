@@ -94,7 +94,9 @@ html, body, #form_div {
     }
 
     else {
-      json_list = [json]
+      json_list = "[" + json + "]";
+      json.list = JSON.parse(json_list)
+      console.log(json_list)
       insertIntoDB(JSON.stringify(json_list))
     }
   }
