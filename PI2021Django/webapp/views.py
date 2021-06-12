@@ -158,7 +158,7 @@ def insert_into_db(request,user_token,sensorid):
 
     h2.update(user_token.encode('utf-8'))
 
-    try:
+    # try:
         user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
         user_name = Users.objects.get(user_email_value=user_email).user_name_value
         user_password = Users.objects.get(user_email_value=user_email).user_password_value
@@ -175,7 +175,7 @@ def insert_into_db(request,user_token,sensorid):
     
         return Response(parsedJson)
     
-    except:
+    # except:
         return Response('invalid token')
 
 # '/query_db/<str:sensorid>'
