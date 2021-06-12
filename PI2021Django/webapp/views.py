@@ -89,8 +89,12 @@ def authenticate_user_page(request):
     h2.update(user_email.encode('utf-8'))
 
     h2_hexdigest = h2.hexdigest()
-    
-    userObj = Users.objects.get(user_email_value=h2_hexdigest)
+
+    try:
+        userObj = Users.objects.get(user_email_value=h2_hexdigest)
+
+    except:
+        return Response('this email is invalid')
 
     if (userObj.user_password_value == h_hexdigest):
         
@@ -121,7 +125,7 @@ def authenticate_user_page(request):
 
         return Response(session_token)
     
-    return Response('password or name invalid')
+    return Response('password invalid')
 
 # '/insert_into_db
 @api_view(['POST'])
