@@ -132,7 +132,7 @@ def insert_into_db(request,user_token,sensorid):
 
     jsonParserInit = JsonParser.JsonParser()
 
-    readJson = jsonParserInit.flat_json(req)
+    parsedJson = [jsonParserInit.flat_json(item) for item in req]
 
     h2 = hashlib.new('sha512_256')
 
@@ -150,9 +150,9 @@ def insert_into_db(request,user_token,sensorid):
         cache.add(user_session[0],user_session[1])
         sessCache = cache.get(user_name)
     
-    DB.insertIntoSensor(sessCache,readJson, sensorid)
+    DB.insertIntoSensor(sessCache,parsedJson, sensorid)
     
-    return Response(readJson)
+    return Response(parsedJson)
 
 # '/query_db/<str:sensorid>'
 @api_view(['POST'])
