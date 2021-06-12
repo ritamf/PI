@@ -89,6 +89,7 @@ html, body, #form_div {
     var json = JSON.parse(document.getElementById("JSON_input").value)
 
     if(Array.isArray(json)){
+      console.log("is list")
       insertIntoDB(JSON.stringify(json))
     }
 
@@ -99,6 +100,7 @@ html, body, #form_div {
   }
 
   function insertIntoDB(json){
+    console.log(json)
     var sensorid = document.getElementById("sensorID").value
     var user_token = document.getElementById("user_token").value
     var url2 = '/insert_into_db/' + user_token + "/" + sensorid
@@ -157,7 +159,7 @@ html, body, #form_div {
     <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
 
-    <button id="insert" type="submit" onclick="callInsert()">Insert</button>
+    <button id="insert" type="button" onclick="callInsert()">Insert</button>
   </form>
 </div>
 </body>
