@@ -144,7 +144,7 @@ def insert_into_db(request,user_token,sensorid):
     if (isinstance(req, list)):
         pass
     else:
-        req = "[" + req + "]";
+        req = "[" + str(req) + "]";
         req = ast.literal_eval(req);
 
     jsonParserInit = JsonParser.JsonParser()
@@ -170,7 +170,7 @@ def insert_into_db(request,user_token,sensorid):
             user_session = DB.sessionLogin(user_name,user_password)
             cache.add(user_session[0],user_session[1])
             sessCache = cache.get(user_name)
-
+        
         DB.insertIntoSensor(sessCache,parsedJson, sensorid)
     
         return Response(parsedJson)
