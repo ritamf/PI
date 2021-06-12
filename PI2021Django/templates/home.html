@@ -322,6 +322,7 @@ footer a {
 			</div>
 			<input type="email" placeholder="Email" id="signInEmail"/>
 			<input type="password" placeholder="Password" id="signInPassword"/>
+			<p id="invalid_credentials"></p>
 			<a href="{% url 'recover_password_page' %}">Forgot your password?</a>
 			<button id="authenticateButton" type="button">Sign In</button>
 		</form>
@@ -436,8 +437,11 @@ function authenticateUser() {
     cache: false,
     timeout: 100000,
     success: function(result) {
-		if (result != "email invalid" || result != "password invalid") {
+		if (result != "email invalid" && result != "password invalid") {
 			location.href = '/token/' + result
+		}
+		else {
+			document.getElementById("invalid_credentials").innerHTML = "Email or password invalid";
 		}
       },
     error: function(result) {
