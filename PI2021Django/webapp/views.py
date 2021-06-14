@@ -28,7 +28,7 @@ import logging
 from DBoT import DB, Cache
 from DBoT import JsonParser
 
-cache = Cache.Cache(15)
+cache = Cache.Cache(10)
 
 print(cache.cachedElements.keys())
 
