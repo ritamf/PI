@@ -58,16 +58,16 @@ def register_user_page(request):
             UserNamesTable.if_not_exists().create(user_name_value=user_name)
         except:
             return Response("name already exists")
-
-        try:
-            DB.register(user_name,h.hexdigest())
-        except:
-            return Response("There was an error, please try again")
         
         try:
             Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
         except:
             return Response("email already exists")
+
+        try:
+            DB.register(user_name,h.hexdigest())
+        except:
+            return Response("There was an error, please try again")
 
     except:
         return Response("error")
