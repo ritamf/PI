@@ -406,9 +406,11 @@ function registerUser() {
     	$("#loader").show();
    	},
     success: function(result) {
-        console.log('ok')
 		if (result == "email already exists" ) {
 			document.getElementById("invalid_credentials_register").innerHTML = "Email has already been used";
+		}
+		else if (result == "name already exists") {
+			document.getElementById("invalid_credentials_register").innerHTML = "Name has already been used";
 		}
 		else if (result == "There was an error, please try again") {
 			document.getElementById("invalid_credentials_register").innerHTML = "There was an error, please try again";

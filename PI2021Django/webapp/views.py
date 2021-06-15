@@ -22,7 +22,7 @@ from django import template
 
 from django.core.cache import cache
 
-from .models import TokensTable, TokensTable_secondary, Users
+from .models import TokensTable, TokensTable_secondary, Users, UserNamesTable
 import logging
 
 from DBoT import DB, Cache
@@ -43,20 +43,34 @@ def register_user_page(request):
     user_email = req["email"]
     user_password = req["password"]
 
+    # try:
+    #     user_name = UserNamesTable.objects.get(user_name_value=user_name).user_name_value
+    # except:
+    #     return Response("name already exists")
+
     try:
         h = hashlib.new('sha512_256')
         h.update(user_password.encode('utf-8'))
         h2 = hashlib.new('sha512_256')
         h2.update(user_email.encode('utf-8'))
-        Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
+
+        try:
+            UserNamesTable.if_not_exists().create(user_name_value=user_name)
+        except:
+            return Response("name already exists")
 
         try:
             DB.register(user_name,h.hexdigest())
         except:
             return Response("There was an error, please try again")
-    except:
-        return Response("email already exists")
+        
+        try:
+            Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
+        except:
+            return Response("email already exists")
 
+    except:
+        return Response("error")
 
     return Response("success")
 
