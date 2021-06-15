@@ -307,6 +307,7 @@ footer a {
 			<input type="email" placeholder="Email" id="signUpEmail"/>
 			<input type="password" placeholder="Password" id="signUpPassword"/>
 			<input type="password" placeholder="Confirm Password" id="signUpPasswordConfirm"/>
+			<p id="invalid_credentials_register"></p>
 			<button id="registerButton">Sign Up</button>
 			<!-- Image loader -->
 			<div id='loader' style='display: none;'>
@@ -406,6 +407,15 @@ function registerUser() {
    	},
     success: function(result) {
         console.log('ok')
+		if (result == "email already exists" ) {
+			document.getElementById("invalid_credentials_register").innerHTML = "Email has already been used";
+		}
+		else if (result == "There was an error, please try again") {
+			document.getElementById("invalid_credentials_register").innerHTML = "There was an error, please try again";
+		}
+		else{
+			console.log("ok")
+		}
       },
     error: function(result) {
         console.log('error')

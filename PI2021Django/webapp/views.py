@@ -49,10 +49,14 @@ def register_user_page(request):
         h2 = hashlib.new('sha512_256')
         h2.update(user_email.encode('utf-8'))
         Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
-    except:
-        return Response("user already exists")
 
-    DB.register(user_name,h.hexdigest())
+        try:
+            DB.register(user_name,h.hexdigest())
+        except:
+            return Response("There was an error, please try again")
+    except:
+        return Response("email already exists")
+
 
     return Response("success")
 
