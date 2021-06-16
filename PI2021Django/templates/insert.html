@@ -111,14 +111,17 @@ html, body, #form_div {
       if (result != "invalid token") {
         document.getElementById("invalid_credentials").style.visibility = "hidden";
 			  console.log('ok')
+        return True;
 		  }
 		  else {
 			  document.getElementById("invalid_credentials").style.visibility = "visible";
+        return False;
 		  }
         
       },
       error: function(result) {
         console.log('error')
+        return False;
       },
       complete:function(data){
     	// Hide image container
@@ -155,7 +158,7 @@ html, body, #form_div {
 
 
 <div id="form_div">
-  <form>
+  <form onsubmit="return callInsert()">
 
     <label for="sensorID">Sensor ID: </label>
     <input type="text" id="sensorID" name="sensorID" placeholder="Write Sensor ID here..">
@@ -165,7 +168,7 @@ html, body, #form_div {
 
     <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
-    <button id="insert" type="submit" onclick="callInsert()">Insert</button>
+    <button id="insert" type="submit">Insert</button>
     <p style="visibility: hidden" id="invalid_credentials">Token is invalid</p>
     <!-- Image loader -->
 			<div id='loader' style='display: none;'>
