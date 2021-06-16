@@ -299,7 +299,7 @@ footer a {
 
 <div class="container" id="container">
 	<div class="form-container sign-up-container">
-		<form action="#">
+		<form action="#" id="registerForm">
 			<h1>Create Account</h1>
 			<div class="social-container">
 			</div>
@@ -382,11 +382,11 @@ function registerUser() {
   var signUpPasswordConfirm = document.getElementById('signUpPasswordConfirm').value;
 
   if (signUpPassword != signUpPasswordConfirm) {
-		alert("Passwords don't match");
+	document.getElementById("invalid_credentials_register").innerHTML = "Passwords don't match";
   }
 
   else if (signUpName == "" | signUpEmail == "" | signUpPassword == "" | signUpPasswordConfirm == ""){
-		alert("One or more fields are empty");
+	document.getElementById("invalid_credentials_register").innerHTML = "One or more fields are empty";
   }
 
   else {
@@ -416,6 +416,7 @@ function registerUser() {
 			document.getElementById("invalid_credentials_register").innerHTML = "There was an error, please try again";
 		}
 		else{
+			document.getElementById("registerForm").reset();
 			console.log("ok")
 		}
       },
