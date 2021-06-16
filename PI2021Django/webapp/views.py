@@ -55,19 +55,21 @@ def register_user_page(request):
         h2.update(user_email.encode('utf-8'))
 
         try:
-            UserNamesTable.if_not_exists().create(user_name_value=user_name)
-        except:
+            UserNamesTable.objects.get(user_name_value=user_name).user_name_value
             return Response("name already exists")
         
-        try:
-            Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
         except:
-            return Response("email already exists")
+            try:
+                Users.objects.get(user_email_value=h2.hexdigest()).user_name_value
+                return Response("email already exists")
 
-        try:
-            DB.register(user_name,h.hexdigest())
-        except:
-            return Response("There was an error, please try again")
+            except:
+                try:
+                    DB.register(user_name,h.hexdigest())
+                    UserNamesTable.if_not_exists().create(user_name_value=user_name)
+                    Users.if_not_exists().create(user_name_value=user_name, user_email_value=h2.hexdigest(),user_password_value=h.hexdigest())
+                except:
+                    return Response("There was an error, please try again")
 
     except:
         return Response("error")
@@ -85,11 +87,15 @@ def logout_user_page(request,user_token):
 
     h_hexdigest = h.hexdigest()
 
-    res = TokensTable.objects.get(user_token_value=h_hexdigest)
-    res2 = TokensTable_secondary.objects.get(user_email_value=res.user_email_value)
-    res2.delete()
+    try:
+        res = TokensTable.objects.get(user_token_value=h_hexdigest)
+        res2 = TokensTable_secondary.objects.get(user_email_value=res.user_email_value)
+        res2.delete()
 
-    res.delete()
+        res.delete()
+    
+    except:
+        return Response("invalid token")
 
     return Response("successfully logged out")
 

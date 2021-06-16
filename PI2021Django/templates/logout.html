@@ -91,6 +91,7 @@ input[type=text], select {
   <label for="user_token">Your Token: </label>
   <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
   <button id="insert" type="submit" onclick="callLogout()">Logout</button>
+  <p id="invalid_credentials"></p>
 </form>
 </div>
 </body>
@@ -107,6 +108,9 @@ input[type=text], select {
     type: 'GET',
     success: function(result) {
         console.log('ok')
+        if (result == "invalid token") {
+			    document.getElementById("invalid_credentials_register").innerHTML = "This token is invalid";
+		    }
       },
       error: function(result) {
         console.log('error')
