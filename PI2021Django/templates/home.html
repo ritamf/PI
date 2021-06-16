@@ -308,12 +308,13 @@ footer a {
 			<input type="password" placeholder="Password" id="signUpPassword"/>
 			<input type="password" placeholder="Confirm Password" id="signUpPasswordConfirm"/>
 			<p id="invalid_credentials_register"></p>
-			<button id="registerButton" type="button">Sign Up</button>
 			<!-- Image loader -->
 			<div id='loader' style='display: none;'>
-				<img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' width='32px' height='32px'>
+				<img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' width='64px' height='64px'>
 			</div>
 			 <!-- Image loader -->
+			<button id="registerButton" type="button">Sign Up</button>
+			
 		</form>
 	</div>
 	<div class="form-container sign-in-container">
@@ -417,6 +418,7 @@ function registerUser() {
 		}
 		else{
 			document.getElementById("registerForm").reset();
+			document.getElementById("invalid_credentials_register").innerHTML = "";
 			console.log("ok")
 		}
       },
