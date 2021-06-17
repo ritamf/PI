@@ -86,14 +86,19 @@ html, body, #form_div {
 <script>
 
   function callInsert() {
-    var json = JSON.parse(document.getElementById("JSON_input").value)
+    var input_value = document.getElementById("JSON_input").value
 
-    if(Array.isArray(json) == True) {
+    try {
+      json = JSON.parse(input_value)
       insertIntoDB(JSON.stringify(json))
     }
 
-    else {
+    catch {
+
+      json_list = "[" + json + "]"
+      console.log(json_list)
       insertIntoDB(JSON.stringify(JSON.parse("[" + json + "]")))
+
     }
     
   }
