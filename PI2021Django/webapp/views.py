@@ -296,43 +296,46 @@ def password_reset_request(request):
 @api_view(['GET'])
 def get_all_attributes(request,user_token):
 
-    h2 = hashlib.new('sha512_256')
+    try:
+        h2 = hashlib.new('sha512_256')
 
-    h2.update(user_token.encode('utf-8'))
+        h2.update(user_token.encode('utf-8'))
 
-    user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
-    user_name = Users.objects.get(user_email_value=user_email).user_name_value
-    user_password = Users.objects.get(user_email_value=user_email).user_password_value
+        user_email = TokensTable.objects.get(user_token_value=h2.hexdigest()).user_email_value
+        user_name = Users.objects.get(user_email_value=user_email).user_name_value
+        user_password = Users.objects.get(user_email_value=user_email).user_password_value
 
-    sessCache = cache.get(user_name)
-
-    if sessCache is None:
-        user_session = DB.sessionLogin(user_name,user_password)
-        cache.add(user_session[0],user_session[1])
         sessCache = cache.get(user_name)
 
-    #get all attributes
-    all_attributes = DB.getAllSensorsAttributes(sessCache)
+        if sessCache is None:
+            user_session = DB.sessionLogin(user_name,user_password)
+            cache.add(user_session[0],user_session[1])
+            sessCache = cache.get(user_name)
 
-    all_attributes_2 = [attribute for attributeList in all_attributes for attribute in attributeList[2] ]
+        #get all attributes
+        all_attributes = DB.getAllSensorsAttributes(sessCache)
 
-    all_attributes_2 = list(dict.fromkeys(all_attributes_2))
+        all_attributes_2 = [attribute for attributeList in all_attributes for attribute in attributeList[2] ]
 
-    attributes_dict = {"all": all_attributes_2}
+        all_attributes_2 = list(dict.fromkeys(all_attributes_2))
 
-    sensors_list = DB.getSensors(sessCache)
+        attributes_dict = {"all": all_attributes_2}
 
-    for sensorid in sensors_list:
+        sensors_list = DB.getSensors(sessCache)
 
-        sensor_attributes = DB.getSensorAttributes(sessCache,sensorid)
+        for sensorid in sensors_list:
 
-        sensor_attributes_2 = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
+            sensor_attributes = DB.getSensorAttributes(sessCache,sensorid)
 
-        sensor_attributes_2 = list(dict.fromkeys(sensor_attributes_2))
+            sensor_attributes_2 = [attribute for attributeList in sensor_attributes for attribute in attributeList[2] ]
 
-        attributes_dict[sensorid] = sensor_attributes_2
-    
-    return Response(attributes_dict)
+            sensor_attributes_2 = list(dict.fromkeys(sensor_attributes_2))
+
+            attributes_dict[sensorid] = sensor_attributes_2
+
+        return Response(attributes_dict)
+    except:
+        return Response('invalid token')
 
 # '/'
 @csrf_exempt
