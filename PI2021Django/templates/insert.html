@@ -95,9 +95,9 @@ html, body, #form_div {
 
     catch {
 
-      json_list = "[" + json + "]"
+      json_list = "[" + input_value + "]"
       console.log(json_list)
-      insertIntoDB(JSON.stringify(JSON.parse("[" + json + "]")))
+      insertIntoDB(JSON.stringify(JSON.parse(json_list)))
 
     }
     

@@ -155,7 +155,7 @@ html, body, #form_div {
 <div id="form_div">
   <form>
     <label for="user_token">Your Token: </label>
-    <label style="visibility: hidden" id="invalid_credentials">Token is invalid or attributes were not specified</label>
+    <label id="invalid_credentials"></label>
     <div>
       <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
       <button type="button" id="loadAttributes" onclick="load_Attributes()">Load Attributes</button>
@@ -179,8 +179,6 @@ html, body, #form_div {
     <label for="to_ts">To: </label>
     <input type="date" id="to_ts" name="to_ts" value="None" min="2019-02-03" max="2021-12-03">
     <button id="query" type="button" onclick="queryDB()">Query</button>
-    <p style="visibility: hidden" id="invalid_credentials">Token is invalid or attributes were not specified</p>
-    
   </form>
   <div id="result_div" style="visibility: hidden;">
     This is my DIV element.
@@ -267,7 +265,7 @@ html, body, #form_div {
       data: data_dict,
       success: function(result) {
         if (result != "invalid token") {
-          document.getElementById("invalid_credentials").style.visibility = "hidden"
+          document.getElementById("invalid_credentials").innerHTML = "";
 			    for( const element of result){
             document.getElementById("result_div").innerHTML += JSON.stringify(element);
             document.getElementById("result_div").innerHTML += "<br>"
@@ -275,7 +273,7 @@ html, body, #form_div {
           result_div.style.visibility = "visible";
 		    }
 		    else {
-			    document.getElementById("invalid_credentials").style.visibility = "visible";
+			    document.getElementById("invalid_credentials").innerHTML = "Token is invalid or attributes were not specified";
 		    }
         
         },
@@ -325,7 +323,7 @@ html, body, #form_div {
           load_attributes_function();
         }
         else {
-          document.getElementById("invalid_credentials").style.visibility = "visible";
+          document.getElementById("invalid_credentials").innerHTML = "Token is invalid";
         }},
         error: function(result) {
           console.log('error')
