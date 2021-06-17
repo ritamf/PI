@@ -177,11 +177,10 @@ html, body, #form_div {
 
     <label for="to_ts">To: </label>
     <input type="date" id="to_ts" name="to_ts" value="None" min="2019-02-03" max="2021-12-03">
-
-
+    <p style="visibility: hidden" id="invalid_credentials">Token is invalid</p>
     <button id="query" type="button" onclick="queryDB()">Query</button>
 
-    <p style="visibility: hidden" id="invalid_credentials">Token is invalid</p>
+    
 
     
   </form>
