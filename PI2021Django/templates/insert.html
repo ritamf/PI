@@ -94,10 +94,13 @@ html, body, #form_div {
     }
 
     catch {
-
-      json_list = "[" + input_value + "]"
-      console.log(json_list)
-      insertIntoDB(JSON.stringify(JSON.parse(json_list)))
+      try {
+        json_list = "[" + input_value + "]"
+        insertIntoDB(JSON.stringify(JSON.parse(json_list)))
+      }
+      catch {
+        console.log("bad format")
+      }
 
     }
     
@@ -122,12 +125,12 @@ html, body, #form_div {
    	},
     success: function(result) {
       if (result != "invalid token") {
-        document.getElementById("invalid_credentials").style.visibility = "hidden";
+        document.getElementById("invalid_credentials").innerHTML = "";
         document.getElementById("insertForm").reset();
 			  console.log('ok')
 		  }
 		  else {
-			  document.getElementById("invalid_credentials").style.visibility = "visible";
+			  document.getElementById("invalid_credentials").innerHTML = "Invalid Token";
 		  }
         
       },
@@ -175,12 +178,12 @@ html, body, #form_div {
     <input type="text" id="sensorID" name="sensorID" placeholder="Write Sensor ID here..">
 
     <label for="user_token">Your Token: </label>
+    <label id="invalid_credentials"></label>
     <input type="text" id="user_token" name="user_token" placeholder="Paste your token here...">
 
     <label for="JSON_input">JSON input: </label>
     <input style="height:200px;" type="text" id="JSON_input" name="JSON_input" placeholder="JSON input..">
     <button id="insert" type="button" onclick="callInsert()">Insert</button>
-    <p style="visibility: hidden" id="invalid_credentials">Token is invalid</p>
     <!-- Image loader -->
 			<div id='loader' style='display: none;'>
 				<img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' width='50px' height='50px'>
