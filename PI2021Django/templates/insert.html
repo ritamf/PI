@@ -99,7 +99,7 @@ html, body, #form_div {
         insertIntoDB(JSON.stringify(JSON.parse(json_list)))
       }
       catch {
-        console.log("bad format")
+        //pass
       }
 
     }
@@ -107,7 +107,6 @@ html, body, #form_div {
   }
 
   function insertIntoDB(json){
-    console.log(json)
     var sensorid = document.getElementById("sensorID").value
     var user_token = document.getElementById("user_token").value
     var url2 = '/insert_into_db/' + user_token + "/" + sensorid

@@ -30,8 +30,6 @@ from DBoT import JsonParser
 
 cache = Cache.Cache(4)
 
-print(cache.cachedElements.keys())
-
 # '/register_user
 @csrf_exempt
 @api_view(['POST'])
@@ -131,8 +129,6 @@ def authenticate_user_page(request):
         user_session = DB.sessionLogin(user_name,h_hexdigest)
         cache.add(user_session[0],user_session[1])
         
-        print(cache.get(user_name))
-
         session_token = secrets.token_urlsafe(32) # token to use during session
 
         h2 = hashlib.new('sha512_256')
@@ -156,12 +152,10 @@ def authenticate_user_page(request):
     
     return Response('password invalid')
 
-# '/insert_into_db
+# 'insert_into_db/<str:user_token>/<str:sensorid>
 @csrf_exempt
 @api_view(['POST'])
 def insert_into_db(request,user_token,sensorid):
-
-    print(cache.cachedElements.keys())
 
     req = request.data
 
@@ -200,7 +194,7 @@ def insert_into_db(request,user_token,sensorid):
     except:
         return Response('invalid token')
 
-# '/query_db/<str:sensorid>'
+# 'query_db/<str:user_token>/<str:sensorid>'
 @csrf_exempt
 @api_view(['POST'])
 def query_db(request,user_token,sensorid):
@@ -243,7 +237,6 @@ def query_db(request,user_token,sensorid):
                         if from_ts != "None" and from_ts != "":
                             values = DB.rangeQueryPerSensor(sessCache, sensorid, attributes, conditions, from_ts, to_ts)
                         else:
-                            print("didnt use ts")
                             values = DB.queryPerSensor(sessCache, sensorid, attributes, conditions)
                     else:
                         values = DB.queryPerSensor(sessCache, sensorid, attributes, {})
@@ -340,22 +333,16 @@ def get_all_attributes(request,user_token):
 # '/'
 @csrf_exempt
 def home_page(request, *args, **kwargs):
-    print(args, kwargs)
-    
     return render(request, "home.html", {})
 
 # '/insert'
 @csrf_exempt
 def db_insert_page(request, *args, **kwargs):
-    print(args, kwargs)
-
     return render(request, "insert.html", {})
 
 # '/query'
 @csrf_exempt
 def db_query_page(request, *args, **kwargs):
-    print(args, kwargs)
-    
     return render(request, "query.html", {})
 
 # '/token/<str:token>'
@@ -372,15 +359,11 @@ def db_token_page(request, token):
 # '/logout'
 @csrf_exempt
 def logout_page(request, *args, **kwargs):
-    print(args, kwargs)
-    
     return render(request, "logout.html", {})
 
 # '/recover_password_page'
 @csrf_exempt
 def recover_password_page(request, *args, **kwargs):
-    print(args, kwargs)
-    
     return render(request, "recover_password.html", {})
 
 # '<str:user_token>/grafana'
@@ -432,7 +415,6 @@ def datasource_search(request,user_token):
 @api_view(['POST'])
 def datasource_query(request,user_token):
     try:
-        print(request.body)
         h2 = hashlib.new('sha512_256')
 
         h2.update(user_token.encode('utf-8'))
@@ -492,7 +474,6 @@ def datasource_query(request,user_token):
         else:
             if campo is not None and campo != '':
                 if condicoes is not None:
-                    print("rangeQueryPerUser")
                     values = DB.rangeQueryPerUser(sessCache, campo, condicoes, ti, tf)
 
         values_sorted = sorted(values, key=itemgetter('timestamp'))
@@ -519,8 +500,6 @@ def dataframe_to_json_table(target, results, freq, ti, tf):
     tempo_seconds = tempo.total_seconds()
     tempo_miliseconds = tempo_seconds*1000
     points = tempo_miliseconds / freq
-
-    print(points)
 
     array_campo = results[0].keys()
 
@@ -577,7 +556,6 @@ def dataframe_to_response(target, results, freq, ti, tf):
                 else:
                     continue
             if len(point_attribute_values) > 0:
-                print(point_attribute_values)
                 point_attribute_average = sum(point_attribute_values) / len(point_attribute_values)
             else:
                 point_attribute_average = 0
@@ -601,7 +579,6 @@ def to_epoch(dt_format):
 @csrf_exempt
 @api_view(['POST'])
 def datasource_annotations(request,user_token):
-    print(request.body)
     unix_epoch_time = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds() * 1000)
     content = {'text': 'text shown in body','time':unix_epoch_time}
     return Response(content)

@@ -254,7 +254,6 @@ html, body, #form_div {
       var user_token = document.getElementById("user_token").value
       var url2 = '/query_db/' + user_token + '/' + sensor_id
       data_dict = JSON.stringify({ "conditions": condition_list, "attributes": attributes, "from_ts": from_ts, "to_ts": to_ts})
-      console.log(data_dict)
       $.ajax({ 
       headers: { 
           'Accept': 'application/json',
