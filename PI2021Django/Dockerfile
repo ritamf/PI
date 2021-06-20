@@ -24,3 +24,5 @@ RUN mkdir /staticfiles
 RUN mkdir /proxy
 
 RUN chmod -x /scripts/*
+
+CMD ["entrypoint.sh"]
