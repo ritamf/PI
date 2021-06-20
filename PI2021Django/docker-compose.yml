@@ -12,5 +12,6 @@ services:
       - SECRET_KEY=rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j
   grafana:
     network_mode: "host"
-    image: grafana/grafana:7.5.7
-    user: "104"
+    image: grafana/grafana:8.0.3
+    environment:
+      - GF_INSTALL_PLUGINS=simpod-json-datasource

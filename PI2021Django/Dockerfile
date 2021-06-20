@@ -26,4 +26,3 @@ RUN mkdir /proxy
 RUN chmod -x /scripts/*
 
 CMD ["entrypoint.sh"]
-

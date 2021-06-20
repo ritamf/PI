@@ -23,7 +23,7 @@ urlpatterns = [
     path('query/', views.db_query_page, name="db_query_page"),
     path('insert/', views.db_insert_page, name="db_insert_page"),
     path('token/<str:token>', views.db_token_page, name="db_token_page"),
-    path('recover_password/', views.recover_password_page, name="recover_password_page"),
+    path('recover_password/', views.recover_password_page, name="recover_passwtord_page"),
     path('logout/', views.logout_page, name="logout_page"),
     
     path('register_user', views.register_user_page, name="register_user_page"),
