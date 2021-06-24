@@ -8,21 +8,21 @@ User manual for DBoT project
 
 2. Login (if asked to) with username: "admin", password: "admin"
 
-3. Go to "Configuration" -> "Data Sources"
+3. Go to **"Configuration" -> "Data Sources"**
 
-4. Click "Add data source" and search for "JSON"
+4. Click **"Add data source"** and search for **"JSON"**
 
-5. In "url" put [http://10.0.12.65:3000/<str:user_token>/grafana](http://10.0.12.65:3000/<str:user_token>/grafana) where "<str:user_token>" is the current token you have when you logged in the application
+5. In **"url"** put [http://10.0.12.65:3000/<str:user_token>/grafana](http://10.0.12.65:3000/<str:user_token>/grafana) where "<str:user_token>" is the current token you have when you logged in the application
 
-6. Click "Save & Test", a message should appear saying "Data source is working" 
+6. Click **"Save & Test"**, a message should appear saying "Data source is working" 
 
 ## Create dashboard in grafana (setup is required)
 
-1. Go to "Create" -> "Dashboard" and click "Add an empty panel"
+1. Go to **"Create" -> "Dashboard"** and click **"Add an empty panel"**
 
-2. Click in "Metric" and choose your metric (example: "1.temperature")
+2. Click in **"Metric"** and choose your metric (example: "1.temperature")
 
-3. Above the graphic, choose your time range
+3. Above the graphic, choose your ****time range****
 
 4. On the top right corner click "Apply"
 
@@ -30,17 +30,17 @@ User manual for DBoT project
 
 1. Create or edit a dashboard
 
-2. On the top right corner click on the icon to open dashboard settings
+2. On the top right corner click on the icon to open **dashboard settings**
 
-3. Go to "Variables" and click "Add variable"
+3. Go to **"Variables"** and click **"Add variable"**
 
-4. In "Type" instead of query choose "Ad hoc filters"
+4. In **"Type"** instead of query choose **"Ad hoc filters"**
 
-5. Click "update" and go back to the dashboard edit panel
+5. Click **"update"** and go back to the dashboard edit panel
 
-6. On the top left corner click on the "+" icon and choose an attribute (ex: "temperature")
+6. On the top left corner click on the **"+" icon** and choose an attribute (ex: "temperature")
 
-7. Choose an operator (ex: "=") and type a select value (ex: "10")
+7. Choose an **operator** (ex: "=") and type a select **value** (ex: "10")
 
 8. The graphic should now only show values within the conditions of that new ad hoc filter 
 added
@@ -49,19 +49,19 @@ added
 
 ### Authentication
 
-Register new user
+**Register** new user
 
 ```bash
 /register_user
 ```
 
-Authenticate user
+**Authenticate** user
 
 ```bash
 /authenticate_user
 ```
 
-Logout_user
+**Logout** user
 
 ```bash
 /logout_user/<str:user_token>
@@ -69,19 +69,19 @@ Logout_user
 
 ### Database
 
-Insert data into user database
+**Insert** data into user database
 
 ```bash
 /insert_into_db/<str:user_token>/<str:sensorid>
 ```
 
-Query data from user database
+**Query** data from user database
 
 ```bash
 /query_db/<str:user_token>/<str:sensorid>
 ```
 
-Get all attributes from user database
+**Get all attributes** from user database
 
 ```bash
 /get_all_attributes/<str:user_token>
@@ -90,37 +90,37 @@ Get all attributes from user database
 ### Grafana
 
 
-Test connection
+**Test** connection
 
 ```bash
 /<str:user_token>/grafana
 ```
 
-Return available metrics when invoked (Dropdown Metrics when editing a dashboard)
+**Return available metrics when invoked** (Dropdown Metrics when editing a dashboard)
 
 ```bash
 /<str:user_token>/grafana/search
 ```
 
-Return data based on input (data showed in graphic based on metric chosen, date range and ad hoc filters)
+**Return data based on input** (data showed in graphic based on metric chosen, date range and ad hoc filters)
 
 ```bash
 /<str:user_token>/grafana/query
 ```
 
-Return annotations
+Return **annotations**
 
 ```bash
 /<str:user_token>/grafana/annotations
 ```
 
-Return tag keys for ad hoc filters
+Return **tag keys** for ad hoc filters
 
 ```bash
 /<str:user_token>/grafana/tag-keys
 ```
 
-Return tag vaues for ad hoc filters
+Return **tag vaues** for ad hoc filters
 
 ```bash
 /<str:user_token>/grafana/tag-values
