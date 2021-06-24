@@ -1,79 +1,127 @@
-# DBoT - Database of Things
+# DBoT User Manual
 
-A software product which can collect and analyse IoT data.
+User manual for DBoT project
 
-## Setup and execution of code
+## Grafana setup
 
-1. Install the requirements.
+1. Go to port 3000 ([http://localhost:3000/](http://10.0.12.65:3000/) or [http://10.0.12.65:3000/](http://localhost:3000/))
+
+2. Login (if asked to) with username: "admin", password: "admin"
+
+3. Go to **"Configuration" -> "Data Sources"**
+
+4. Click **"Add data source"** and search for **"JSON"**
+
+5. In **"url"** put [http://10.0.12.65:3000/<str:user_token>/grafana](http://10.0.12.65:3000/<str:user_token>/grafana) where "<str:user_token>" is the current token you have when you logged in the application
+
+6. Click **"Save & Test"**, a message should appear saying "Data source is working" 
+
+## Create dashboard in grafana (setup is required)
+
+1. Go to **"Create" -> "Dashboard"** and click **"Add an empty panel"**
+
+2. Click in **"Metric"** and choose your metric (example: "1.temperature")
+
+3. Above the graphic, choose your ****time range****
+
+4. On the top right corner click "Apply"
+
+## Add ad hoc filter to a dashboard in grafana (setup is required)
+
+1. Create or edit a dashboard
+
+2. On the top right corner click on the icon to open **dashboard settings**
+
+3. Go to **"Variables"** and click **"Add variable"**
+
+4. In **"Type"** instead of query choose **"Ad hoc filters"**
+
+5. Click **"update"** and go back to the dashboard edit panel
+
+6. On the top left corner click on the **"+" icon** and choose an attribute (ex: "temperature")
+
+7. Choose an **operator** (ex: "=") and type a select **value** (ex: "10")
+
+8. The graphic should now only show values within the conditions of that new ad hoc filter 
+added
+
+## API endpoints
+
+### Authentication
+
+**Register** new user
 
 ```bash
-pip install -r requirements.txt
+/register_user
 ```
 
-## Arquitecture
+**Authenticate** user
 
-![Arquitecture](./imgs/arquitecture.png)
-
-## Data Model
-
-```json
-Json1 = {"sensorId" : "0001",
-"timeStamp" : "2020-06-01 10:10:10",
-"temperature" : "10"}
-
-Json2 = {"sensorId" : "0002",
-"timeStamp" : "2020-06-01 10:10:10",
-"temperature" : "11"}
-
-Json3 = {"sensorId" : "0001",
-"temperature" : "10"}
+```bash
+/authenticate_user
 ```
 
-* Metadata(atribute, pk) PRIMARY KEY(atribute, pk)
+**Logout** user
 
-[]()|[]()
----     |    ---
-'temperature' | 'pk1uuid'
-'sensorid' | 'pk1uuid'
-'timestamp' | 'pk1uuid'
-'temperature' | 'pk2uuid'
-'sensorid' | 'pk2uuid'
-'timestamp' | 'pk2uuid'
-'temperature' | 'pk3uuid'
-'sensorid' | 'pk3uuid'
-[]()|[]()
+```bash
+/logout_user/<str:user_token>
+```
+
+### Database
+
+**Insert** data into user database
+
+```bash
+/insert_into_db/<str:user_token>/<str:sensorid>
+```
+
+**Query** data from user database
+
+```bash
+/query_db/<str:user_token>/<str:sensorid>
+```
+
+**Get all attributes** from user database
+
+```bash
+/get_all_attributes/<str:user_token>
+```
+
+### Grafana
 
 
-* Sensors(user, sensorId, pkList) PRIMARY KEY(user, sensorId)
+**Test** connection
 
-[]()|[]()|[]()
----     |    ---     |    ---
-'Luís' | '1' | ['pk1uuid', 'pk3uuid']
-'Marta' | '2' | ['pk2uuid']
-[]()|[]()
+```bash
+/<str:user_token>/grafana
+```
 
-* Temperature_table(pk, temperature) PRIMARY KEY(pk, temperature)
+**Return available metrics when invoked** (Dropdown Metrics when editing a dashboard)
 
-[]()|[]()
----     |    ---
-'pk1uuid' | '10'
-'pk2uuid' | '11'
-'pk3uuid' | '10'
-[]()|[]()
+```bash
+/<str:user_token>/grafana/search
+```
 
-* Sensorid_table(pk, sensorid) PRIMARY KEY(pk, sensorid)
+**Return data based on input** (data showed in graphic based on metric chosen, date range and ad hoc filters)
 
-[]()|[]()
----     |    ---
-'pk1uuid' | '0001'
-'pk2uuid' | '0002'
-'pk3uuid' | '0001'
-[]()|[]()
+```bash
+/<str:user_token>/grafana/query
+```
 
-* Timestamp_table(pk, timestamp) PRIMARY KEY(pk, timestamp)
+Return **annotations**
 
-[]()|[]()
----     |    ---
-'pk1uuid' | '2020-06-01 10:10:10'
-'pk2uuid' | '2020-06-01 10:10:10'
-[]()|[]()
+```bash
+/<str:user_token>/grafana/annotations
+```
+
+Return **tag keys** for ad hoc filters
+
+```bash
+/<str:user_token>/grafana/tag-keys
+```
+
+Return **tag vaues** for ad hoc filters
+
+```bash
+/<str:user_token>/grafana/tag-values
+```
