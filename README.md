@@ -99,7 +99,7 @@ or
 ```
 ------
 
-**Query** data from user database **(POST)** where **<str:user_token>** is the token given upon login and **<str:sensorid>** is the sensorid where the data will be queried from. If the sensorid given is **"all"** then the query will target all the sensor ids from the user database
+**Query** data from user database **(POST)** where **<str:user_token>** is the token given upon login and **<str:sensorid>** is the sensorid where the data will be queried from. If the sensorid given is **"all"** then the query will target all the sensor ids from the user database: {"conditions","attributes","from_ts","to_ts"}
 
 ```bash
 /query_db/<str:user_token>/<str:sensorid>
@@ -107,9 +107,15 @@ or
 
 
 **POST** data example:
+- Multiple **conditions** can be given
+- **"attributes"** is the values the query will return
+- If **from_ts** is empty, then it will query data from all timestamps
+
 
 ```bash
-{}
+{"conditions":[["temperature",">","5"]],"attributes":["temperature"],"from_ts":"","to_ts":""}
+or
+{"conditions":[["temperature",">","5"],["temperature","<=","10"]],"attributes":["temperature"],"from_ts":"2020-05-31","to_ts":"2020-06-02"}
 ```
 ------
 
