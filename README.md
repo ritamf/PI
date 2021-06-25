@@ -61,6 +61,8 @@ added
 {"name":"test","email":"test@ua.pt","password":"randpassword"}
 ```
 
+------
+
 **Authenticate** user **(POST)**: {"email","password"}
 
 ```bash
@@ -72,14 +74,14 @@ added
 ```bash
 {"email":"test@ua.pt","password":"randpassword"}
 ```
-
+------
 
 **Logout** user **(GET)** where <str:user_token> is the token given upon login
 
 ```bash
 /logout_user/<str:user_token>
 ```
-
+------
 ### Database 
 
 **Insert** data into user database **(POST)** where **<str:user_token>** is the token given upon login and **<str:sensorid>** is the sensorid where the data will be bound to
@@ -95,7 +97,7 @@ or
 [{"sensorid":"0001","temperature":"10","timestamp":"2020-06-01 00:02:10"},
 {"sensorid":"0001","temperature":"20","timestamp":"2020-06-02 00:02:10"}]
 ```
-
+------
 
 **Query** data from user database **(POST)** where **<str:user_token>** is the token given upon login and **<str:sensorid>** is the sensorid where the data will be queried from. If the sensorid given is **"all"** then the query will target all the sensor ids from the user database
 
@@ -109,13 +111,14 @@ or
 ```bash
 {}
 ```
+------
 
 **Get all attributes** from user database **(GET)** where **<str:user_token>** is the token given upon login
 
 ```bash
 /get_all_attributes/<str:user_token>
 ```
-
+------
 ### Grafana
 
 
@@ -124,31 +127,31 @@ or
 ```bash
 /<str:user_token>/grafana
 ```
-
+------
 **Return available metrics when invoked** (Dropdown Metrics when editing a dashboard) where **<str:user_token>** is the token given upon login
 
 ```bash
 /<str:user_token>/grafana/search
 ```
-
+------
 **Return data based on input** (data showed in graphic based on metric chosen, date range and ad hoc filters) where **<str:user_token>** is the token given upon login
 
 ```bash
 /<str:user_token>/grafana/query
 ```
-
+------
 Return **annotations** where **<str:user_token>** is the token given upon login
 
 ```bash
 /<str:user_token>/grafana/annotations
 ```
-
+------
 Return **tag keys** for ad hoc filters where **<str:user_token>** is the token given upon login
 
 ```bash
 /<str:user_token>/grafana/tag-keys
 ```
-
+------
 Return **tag vaues** for ad hoc filters where **<str:user_token>** is the token given upon login
 
 ```bash
