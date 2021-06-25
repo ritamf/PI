@@ -94,8 +94,7 @@ added
 ```bash
 {"sensorid":"0001","temperature":"10","timestamp":"2020-06-01 00:02:10"}
 or
-[{"sensorid":"0001","temperature":"10","timestamp":"2020-06-01 00:02:10"},
-{"sensorid":"0001","temperature":"20","timestamp":"2020-06-02 00:02:10"}]
+[{"sensorid":"0001","temperature":"10","timestamp":"2020-06-01 00:02:10"},{"sensorid":"0001","temperature":"20","timestamp":"2020-06-02 00:02:10"}]
 ```
 ------
 
