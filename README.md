@@ -8,7 +8,7 @@ User manual for DBoT project
 2. go to **/PI2021Django/**
 3. run **$ docker-compose up --force-recreate --build**
 
-### In case you want to run the server on another address (not in 127.0.0.1):
+###### In case you want to run the server on another address (not in 127.0.0.1):
 1. go to **/PI2021Django/Project/settings.p**y and change **"ALLOWED_HOSTS = ['127.0.0.1']"**
 2. Also in **settings.py**, in **"DATABASES"** change **'HOST': '127.0.0.1'**
 3. In **/PI2021Django/docker-compose.yml** change **"127.0.0.1:8000"**
