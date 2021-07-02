@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY','changeme')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.0.12.65','10.0.12.66']
+ALLOWED_HOSTS = ['127.0.0.1']
 # ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
 # if ALLOWED_HOSTS_ENV:
 #     ALLOWED_HOSTS.extend(ALLOWED_HOSTS_ENV.split(','))
@@ -100,7 +100,7 @@ DATABASES = {
         'USER': 'cassandra',
         'PASSWORD': 'cassandra',
         'TEST_NAME': 'test_db',
-        'HOST': '10.0.12.65',
+        'HOST': '127.0.0.1',
         'OPTIONS': {
             'replication': {
                 'strategy_class': 'SimpleStrategy',
