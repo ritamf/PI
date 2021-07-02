@@ -4,11 +4,20 @@ User manual for DBoT project
 
 ## Initial setup
 
+#### 1. Install cassandra and change the following settings in Cassandra.yaml file
+1. authenticator: PasswordAuthenticator
+2. roles_validity_in_ms: 0
+3. roles_update_interval_in_ms: 0
+4. credentials_validity_in_ms: 0
+5. credentials_update_interval_in_ms: 0
+6. authorizer: CassandraAuthorizer
+
+#### 2. Clone the repository and run docker
 1. **git clone** this repository
 2. go to **/PI2021Django/**
 3. run **$ docker-compose up --force-recreate --build**
 
-###### In case you want to run the server on another address (not in 127.0.0.1):
+###### 3. (optional) In case you want to run the server on another address (not in 127.0.0.1):
 1. go to **/PI2021Django/Project/settings.p**y and change **"ALLOWED_HOSTS = ['127.0.0.1']"**
 2. Also in **settings.py**, in **"DATABASES"** change **'HOST': '127.0.0.1'**
 3. In **/PI2021Django/docker-compose.yml** change **"127.0.0.1:8000"**
