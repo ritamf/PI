@@ -2,6 +2,17 @@
 
 User manual for DBoT project
 
+## Initial setup
+
+1. git clone this repository
+2. go to /PI2021Django/
+3. run "$ docker-compose up --force-recreate --build"
+
+In case you want to run the server on another address (not in 127.0.0.1):
+1. go to /PI2021Django/Project/settings.py and change "ALLOWED_HOSTS = ['127.0.0.1']"
+2. Also in settings.py, in "DATABASES" change 'HOST': '127.0.0.1'
+3. In /PI2021Django/docker-compose.yml change "127.0.0.1:8000"
+
 ## Grafana setup
 
 1. Go to port 3000 ([http://localhost:3000/](http://10.0.12.65:3000/) or [http://10.0.12.65:3000/](http://localhost:3000/))
