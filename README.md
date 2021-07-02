@@ -5,12 +5,12 @@ User manual for DBoT project
 ## Initial setup
 
 #### 1. Install cassandra and change the following settings in Cassandra.yaml file
-1. authenticator: PasswordAuthenticator
-2. roles_validity_in_ms: 0
-3. roles_update_interval_in_ms: 0
-4. credentials_validity_in_ms: 0
-5. credentials_update_interval_in_ms: 0
-6. authorizer: CassandraAuthorizer
+- authenticator: PasswordAuthenticator
+- roles_validity_in_ms: 0
+- roles_update_interval_in_ms: 0
+- credentials_validity_in_ms: 0
+- credentials_update_interval_in_ms: 0
+- authorizer: CassandraAuthorizer
 
 #### 2. Clone the repository and run docker
 1. **git clone** this repository
