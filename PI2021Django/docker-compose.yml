@@ -6,7 +6,7 @@ services:
     volumes:
       - ./app:/app
     network_mode: "host"  
-    command: sh -c "python manage.py sync_cassandra && python manage.py runserver 10.0.12.65:8000"
+    command: sh -c "python manage.py sync_cassandra && python manage.py runserver 127.0.0.1:8000"
     environment: 
       - DEBUG=1
       - SECRET_KEY=rx9%qisad36g+qf7r75b_0+r9wb20krzyor-t8ken81a#e$h%j
